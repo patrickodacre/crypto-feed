@@ -1,0 +1,23 @@
+{
+  "name": "crypto-orderbooks-1",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "./node_modules/.bin/mocha -r esm",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "axios": "^0.21.0",
+    "next": "10.0.0",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "sass": "^1.28.0",
+    "websocket": "^1.0.32"
+  },
+  "devDependencies": {
+    "esm": "^3.2.25",
+    "mocha": "^8.2.0"
+  }
+}
