@@ -83,7 +83,6 @@ interface ReaderAPI {
 }
 
 function client() {
-    _client = new W3CWebSocket('wss://api2.poloniex.com')
 
     const api: ReaderAPI = {
         provider,
@@ -106,6 +105,8 @@ function client() {
 // initial orderbook payload, so we'll have to
 // limit the records ourselves here.
 function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand = null) : void {
+
+    _client = new W3CWebSocket('wss://api2.poloniex.com')
 
     // in read() we'll limit the number of
     // records we write to our order books
