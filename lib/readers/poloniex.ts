@@ -6,7 +6,7 @@ export default {
 }
 
 interface PriceToTotal {
-    [key: string]: string
+    [key: string]: {exchangeID: number, total: string}
 }
 
 interface EventsObj {
@@ -23,6 +23,7 @@ interface OrderBookEventPayload {
 }
 
 interface OrderEventPayload {
+    exchangeID: number,
     transaction:string,
     type:string,
     price:string,
@@ -30,7 +31,8 @@ interface OrderEventPayload {
 }
 
 interface TradeEventPayload {
-    id:string,
+    exchangeID: number,
+    tradeID:string,
     transaction:string,
     type:string,
     price:string,
@@ -66,6 +68,7 @@ interface ReaderStreamCommand {
 let customCommand:ReaderStreamCommand
 
 let _client: W3CWebSocket
+let exchangeID: number
 
 interface Provider {
     name: string,
@@ -150,6 +153,9 @@ function read(data) : void {
         emit('heartbeat', true)
         return
     }
+
+    // we'll add the exchangeID to all event payloads
+    exchangeID = data[0]
 
     // array
     const updates = data[2]
@@ -244,6 +250,7 @@ function read(data) : void {
             // ask
             if (type === ASK) {
                 const payload: OrderEventPayload = {
+                    exchangeID,
                     transaction: 'order',
                     type: 'ask',
                     price,
@@ -255,6 +262,7 @@ function read(data) : void {
             // bid
             if (type === BID) {
                 const payload: OrderEventPayload = {
+                    exchangeID,
                     transaction: 'order',
                     type: 'bid',
                     price,
@@ -269,7 +277,7 @@ function read(data) : void {
 
             const [
                 , // ignore this one
-                id,
+                tradeID,
                 type,
                 price,
                 amount,
@@ -279,7 +287,8 @@ function read(data) : void {
             // sell
             if (type === SELL) {
                 const payload: TradeEventPayload = {
-                    id,
+                    exchangeID,
+                    tradeID,
                     transaction: 'trade',
                     type: 'sell',
                     price,
@@ -294,7 +303,8 @@ function read(data) : void {
             // buy
             if (type === BUY) {
                 const payload: TradeEventPayload = {
-                    id,
+                    exchangeID,
+                    tradeID,
                     transaction: 'trade',
                     type: 'buy',
                     price,
@@ -322,14 +332,17 @@ function updatePriceToTotal(
     const t: PriceToTotal = JSON.parse(JSON.stringify(priceToTotal))
 
     if (! t[price]) {
-        t[price] = "0.00000000"
+        t[price] = {
+            exchangeID,
+            total: "0.00000000",
+        }
     }
 
-    const currentAmount: number = parseFloat(t[price])
+    const currentAmount: number = parseFloat(t[price].total)
 
     // price needs to remain a string
     // @ts-ignore
-    t[price] = parseFloat(currentAmount + amount).toFixed(8)
+    t[price].total = parseFloat(currentAmount + amount).toFixed(8)
 
     if (! t[price]) {
         emit('error', new Error("Price Error"))
