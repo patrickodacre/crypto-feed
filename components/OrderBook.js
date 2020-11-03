@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import poloniexReader from "../lib/readers/poloniex.ts"
 import binanceReader from "../lib/readers/binance.ts"
 import styles from './OrderBook.module.scss'
-import prices from '../lib/prices'
+import exchange from '../lib/exchange'
 
 export default class OrderBook extends React.Component {
 
@@ -34,7 +34,7 @@ export default class OrderBook extends React.Component {
     }
 
     handleAsk = (ask, exchange, compareExchange, state) => {
-        const newPrices = prices.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
+        const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
 
         const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
         newTotals[compareExchange][ask.price] = {
@@ -106,7 +106,7 @@ export default class OrderBook extends React.Component {
 
     handleBid = (bid, exchange, compareExchange) => {
 
-        const newPrices = prices.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
+        const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
 
         const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
         newTotals[exchange][bid.price] = {
@@ -182,11 +182,11 @@ export default class OrderBook extends React.Component {
         // binance handlers
         {
             this.binance.on('bid', bid => {
-                prices.handleBid(bid, 'binance', 'poloniex', this)
+                exchange.handleBid(bid, 'binance', 'poloniex', this)
             })
 
             this.binance.on('ask', ask => {
-                prices.handleAsk(ask, 'binance', 'poloniex', this)
+                exchange.handleAsk(ask, 'binance', 'poloniex', this)
             })
         }
 
@@ -212,11 +212,11 @@ export default class OrderBook extends React.Component {
             })
 
             this.poloniex.on('ask', ask => {
-                prices.handleAsk(ask, 'poloniex', 'binance', this)
+                exchange.handleAsk(ask, 'poloniex', 'binance', this)
             })
 
             this.poloniex.on('bid', bid => {
-                prices.handleBid(bid, 'poloniex', 'binance', this)
+                exchange.handleBid(bid, 'poloniex', 'binance', this)
             })
         }
 
