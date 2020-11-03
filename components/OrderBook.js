@@ -45,15 +45,6 @@ export default class OrderBook extends React.Component {
 
         this.poloniex.on('data', d => console.log(d))
 
-        this.poloniex.on('bid', bid => {
-
-            const newPrices = prices.insertBidPrice(this.state.sortedBidPrices, bid.price)
-
-            const newTotals = this.poloniex.updatePriceToTotal(this.state.bidPriceToTotal, bid.price, bid.amount)
-
-            this.setState({bidPriceToTotal: newTotals, sortedBidPrices: newPrices})
-        })
-
         this.poloniex.on('error', err => {
             console.error(err.message)
         })
