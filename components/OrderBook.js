@@ -32,7 +32,11 @@ export default class OrderBook extends React.Component {
         this.countLeft = null
 
         this.state = {
-            opps: [],
+            opps: {
+                // buy => sells
+                poloniex: {},
+                binance: {},
+            },
             sortedAskPrices: [],
             sortedBidPrices: [],
 
@@ -73,12 +77,26 @@ export default class OrderBook extends React.Component {
 
                 for (const askPrice in this.state.askPriceToTotal.poloniex) {
                     if ((parseFloat(bid.price) > parseFloat(askPrice)) && this.state.askPriceToTotal.poloniex[askPrice].total > 0) {
-                        opps.push({
-                            buyFrom: 'poloniex',
-                            buyAt: parseFloat(askPrice),
-                            sellTo: 'binance',
-                            sellAt: parseFloat(bid.price),
-                        })
+                        if (! opps.poloniex[askPrice]) {
+                            opps.poloniex[askPrice] = {}
+                        }
+
+                        if (! opps.poloniex[askPrice][bid.price]) {
+                            opps.poloniex[askPrice][bid.price] = {
+                                buy: 0,
+                                sell: 0,
+                            }
+                        }
+
+                        opps.poloniex[askPrice][bid.price].buy += parseFloat(this.state.askPriceToTotal.poloniex[askPrice].total)
+                        opps.poloniex[askPrice][bid.price].sell += parseFloat(bid.amount)
+
+                        // opps.poloniex[askPrice].push({
+                            // buyFrom: 'poloniex',
+                            // buyAt: parseFloat(askPrice),
+                            // sellTo: 'binance',
+                            // sellAt: parseFloat(bid.price),
+                        // })
                     }
                 }
 
@@ -105,12 +123,29 @@ export default class OrderBook extends React.Component {
                     // if we can buy on binance for less than someone on Poloniex is willing to pay
                     // we have an arbitrage opportunity
                     if ((parseFloat(ask.price) < parseFloat(bidPrice)) && this.state.bidPriceToTotal.poloniex[bidPrice].total > 0) {
-                        opps.push({
-                            buyFrom: 'binance',
-                            buyAt: parseFloat(bidPrice),
-                            sellTo: 'poloniex',
-                            sellAt: parseFloat(ask.price),
-                        })
+
+                        if (! opps.binance[ask.price]) {
+                            opps.binance[ask.price] = {}
+                        }
+
+                        if (! opps.binance[ask.price][bidPrice]) {
+                            opps.binance[ask.price][bidPrice] = {
+                                buy: 0,
+                                sell: 0,
+                            }
+                        }
+
+                        opps.binance[ask.price][bidPrice].buy += parseFloat(ask.amount)
+                        opps.binance[ask.price][bidPrice].sell += parseFloat(this.state.bidPriceToTotal.poloniex[bidPrice].total)
+                        // opps.binance[ask.price][bidPrice] += parseFloat(ask.amount)
+
+
+                        // opps.binance[ask.price].push({
+                            // buyFrom: 'binance',
+                            // buyAt: parseFloat(bidPrice),
+                            // sellTo: 'poloniex',
+                            // sellAt: parseFloat(ask.price),
+                        // })
                     }
                 }
 
@@ -161,12 +196,26 @@ export default class OrderBook extends React.Component {
                     // if we can buy on binance for less than someone on Poloniex is willing to pay
                     // we have an arbitrage opportunity
                     if ((parseFloat(ask.price) < parseFloat(bidPrice)) && this.state.bidPriceToTotal.binance[bidPrice].total > 0) {
-                        opps.push({
-                            buyFrom: 'poloniex',
-                            buyAt: parseFloat(ask.price),
-                            sellTo: 'binance',
-                            sellAt: parseFloat(bidPrice),
-                        })
+                        if (! opps.poloniex[ask.price]) {
+                            opps.poloniex[ask.price] = {}
+                        }
+
+                        if (! opps.poloniex[ask.price][bidPrice]) {
+                            opps.poloniex[ask.price][bidPrice] = {
+                                buy: 0,
+                                sell: 0,
+                            }
+                        }
+
+                        opps.poloniex[ask.price][bidPrice].buy += parseFloat(ask.amount)
+                        opps.poloniex[ask.price][bidPrice].sell += parseFloat(this.state.bidPriceToTotal.binance[bidPrice].total)
+
+                        // opps.poloniex[ask.price].push({
+                            // buyFrom: 'poloniex',
+                            // buyAt: parseFloat(ask.price),
+                            // sellTo: 'binance',
+                            // sellAt: parseFloat(bidPrice),
+                        // })
                     }
                 }
 
@@ -193,12 +242,26 @@ export default class OrderBook extends React.Component {
                     // if we can buy on binance for less than someone on Poloniex is willing to pay
                     // we have an arbitrage opportunity
                     if ((parseFloat(bid.price) > parseFloat(askPrice)) && this.state.askPriceToTotal.binance[askPrice].total > 0) {
-                        opps.push({
-                            buyFrom: 'binance',
-                            buyAt: parseFloat(askPrice),
-                            sellTo: 'poloniex',
-                            sellAt: parseFloat(bid.price),
-                        })
+                        if (! opps.binance[askPrice]) {
+                            opps.binance[askPrice] = {}
+                        }
+
+                        if (! opps.binance[askPrice][bid.price]) {
+                            opps.binance[askPrice][bid.price] = {
+                                buy: 0,
+                                sell: 0,
+                            }
+                        }
+
+                        opps.binance[askPrice][bid.price].buy += parseFloat(this.state.askPriceToTotal.binance[askPrice].total)
+                        opps.binance[askPrice][bid.price].sell += parseFloat(bid.amount)
+
+                        // opps.binance[askPrice].push({
+                            // buyFrom: 'binance',
+                            // buyAt: parseFloat(askPrice),
+                            // sellTo: 'poloniex',
+                            // sellAt: parseFloat(bid.price),
+                        // })
                     }
                 }
 
@@ -294,12 +357,78 @@ export default class OrderBook extends React.Component {
             )
         })
 
-        const opps = this.state.opps.map((o, i) => {
-            const key = JSON.stringify(o) + i
+        // key by 
+        const buyFromBinancePrices = Object.keys(this.state.opps.binance)
+        const buyFromPoloniexPrices = Object.keys(this.state.opps.poloniex)
+
+        const poloniexBuys = buyFromPoloniexPrices.map((buyPrice, i) => {
+
+            const key = buyPrice + i + ""
+
+            const binanceSellPrices = Object.keys(this.state.opps.poloniex[buyPrice])
+
+            const opps = binanceSellPrices.map((sellPrice, i) => {
+                const key = sellPrice + i + ""
+
+                const pFee = buyPrice * 0.125
+                const bFee = sellPrice * 0.1
+                const profit = (sellPrice - buyPrice - (bFee + bFee))
+
+                const profitClass = profit > 0
+                      ? 'green'
+                      : 'red'
+
+                return (
+                    <div className={styles.opp} key={key}>
+                        <div>Sell at: {parseFloat(sellPrice)} = Profit <span className={styles[profitClass]}>{profit}</span></div>
+                        <div className={styles.oppBuySell}>
+                            <div>Buy Amount: {this.state.opps.poloniex[buyPrice][sellPrice].buy}</div>
+                            <div>Sell Amount: {this.state.opps.poloniex[buyPrice][sellPrice].sell}</div>
+                        </div>
+                    </div>
+                )
+            })
 
             return (
-                <div className={styles.opp} key={key}>
-                    Buy from {o.buyFrom} at {o.buyAt} and sell to {o.sellTo} at {o.sellAt}
+                <div className={styles.oppGroup} key={key}>
+                    <div>Buy From Poloniex at {parseFloat(buyPrice)}</div>
+                    {opps}
+                </div>
+            )
+        })
+
+        const binanceBuys = buyFromBinancePrices.map((buyPrice, i) => {
+
+            const key = buyPrice + i + ""
+
+            const poloniexSellPrices = Object.keys(this.state.opps.binance[buyPrice])
+
+            const opps = poloniexSellPrices.map((sellPrice, i) => {
+                const key = sellPrice + i + ""
+
+                const bFee = buyPrice * 0.1
+                const pFee = sellPrice * 0.125
+                const profit = (sellPrice - buyPrice - (bFee + bFee))
+
+                const profitClass = profit > 0
+                      ? 'green'
+                      : 'red'
+
+                return (
+                    <div className={styles.opp} key={key}>
+                        <div>Sell at: {parseFloat(sellPrice)} = Profit <span className={styles[profitClass]}>{profit}</span></div>
+                        <div className={styles.oppBuySell}>
+                            <div>Buy Amount: {this.state.opps.binance[buyPrice][sellPrice].buy}</div>
+                            <div>Sell Amount: {this.state.opps.binance[buyPrice][sellPrice].sell}</div>
+                        </div>
+                    </div>
+                )
+            })
+
+            return (
+                <div className={styles.oppGroup} key={key}>
+                    <div>Buy From Binance at {parseFloat(buyPrice)}</div>
+                    {opps}
                 </div>
             )
         })
@@ -320,7 +449,8 @@ export default class OrderBook extends React.Component {
                         </div>
                     </div>
                     <div className={styles.console}>
-                        {opps}
+                        <div>{poloniexBuys}</div>
+                        <div>{binanceBuys}</div>
                     </div>
                 </div>
 

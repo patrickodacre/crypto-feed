@@ -31,3 +31,23 @@
         flex: 1;
     }
 }
+
+.oppGroup {
+    margin-bottom: 1rem;
+
+    .opp {
+        padding-left: 2rem;
+
+        .oppBuySell {
+            padding-left: 2rem;
+        }
+    }
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
