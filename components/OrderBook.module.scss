@@ -1,0 +1,23 @@
+.dashboardRow {
+    display: flex;
+    align-items: center;
+    justify-items: space-between;
+    padding: 0.5rem 0.25rem;
+
+    .price,
+    .amount,
+    .total {
+        padding: 0 0.5rem;
+        flex: 1;
+        text-align: right;
+    }
+}
+
+.orderBook {
+    display: flex;
+    > * {
+        flex: 1;
+        border: 1px solid #333;
+        padding: 1rem;
+    }
+}
