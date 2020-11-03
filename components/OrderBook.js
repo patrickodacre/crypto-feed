@@ -33,143 +33,160 @@ export default class OrderBook extends React.Component {
         }
     }
 
-    // https://docs.poloniex.com/#price-aggregated-book
+    handleAsk = (ask, exchange, compareExchange, state) => {
+        const newPrices = prices.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
+
+        const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
+        newTotals[compareExchange][ask.price] = {
+            exchangeID: compareExchange,
+            total: ask.amount,
+        }
+
+        this.setState({askPriceToTotal: newTotals})
+        this.setState({sortedAskPrices: newPrices})
+
+        const availableLiquidity = parseFloat(ask.amount)
+
+        if (! availableLiquidity) {
+            return
+        }
+
+        // identify arbitrage opportunities
+        {
+            const opps = JSON.parse(JSON.stringify(this.state.opps))
+
+            // I can buy at this price w/ this fee:
+            const buyPrice = parseFloat(ask.price)
+            const buyFee = buyPrice * this.fees[exchange]
+
+            const bidPriceToTotalExchange = this.state.bidPriceToTotal[exchange]
+
+            // we have an "ASK" => an offer to sell
+            // look at potential buyers to see if we can profit
+            for (const bidPrice in bidPriceToTotalExchange) {
+
+                const desiredLiquidity = parseFloat(bidPriceToTotalExchange[bidPrice].total)
+
+                if (! desiredLiquidity) {
+                    continue
+                }
+
+                let sellPrice
+                {
+                    // I can sell at this price w/ this fee:
+                    sellPrice = parseFloat(bidPrice)
+                    const sellFee = sellPrice * this.fees[compareExchange]
+                    const profit = (sellPrice - buyPrice - (buyFee + sellFee))
+
+                    if (profit <= 0) {
+                        console.log(`no profit buying from ${exchange} and selling to ${compareExchange}`, profit)
+                        continue
+                    }
+                }
+
+                // we can buy from this exchange and sell to the other one
+                if (! opps[exchange][ask.price]) {
+                    opps[exchange][ask.price] = {}
+                }
+
+                if (! opps[exchange][ask.price][bidPrice]) {
+                    opps[exchange][ask.price][bidPrice] = {
+                        buy: 0,
+                        sell: 0,
+                    }
+                }
+
+                opps[exchange][ask.price][bidPrice].buy += availableLiquidity
+                opps[exchange][ask.price][bidPrice].sell += desiredLiquidity
+            }
+
+            this.setState({opps})
+        }
+    }
+
+    handleBid = (bid, exchange, compareExchange) => {
+
+        const newPrices = prices.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
+
+        const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
+        newTotals[exchange][bid.price] = {
+            exchangeID: exchange,
+            total: bid.amount,
+        }
+
+        this.setState({bidPriceToTotal: newTotals})
+        this.setState({sortedBidPrices: newPrices})
+
+        const desiredLiquidity = parseFloat(bid.amount)
+
+        if (! desiredLiquidity) {
+            return
+        }
+
+        // identify arbitrage opportunities
+        {
+            const opps = JSON.parse(JSON.stringify(this.state.opps))
+
+            // I need to sell at this price w/ this fee
+            const sellPrice = parseFloat(bid.price)
+            const exchangeFee = sellPrice * this.fees[exchange]
+
+            // we have a "BID" => an offer to buy
+            // look at potential sellers to see if we can profit
+            const askPriceToTotalCompare = this.state.askPriceToTotal[compareExchange]
+
+            for (const askPrice in askPriceToTotalCompare) {
+
+                const availableLiquidity = parseFloat(askPriceToTotalCompare[askPrice].total)
+
+                if (! availableLiquidity) {
+                    continue
+                }
+
+                let buyPrice
+                {
+                    buyPrice = parseFloat(askPrice)
+                    const buyFee = buyPrice * this.fees[compareExchange]
+                    const profit = (sellPrice - buyPrice - (exchangeFee + buyFee))
+
+                    if (profit <= 0) {
+                        console.log(`no profit buying from ${compareExchange} and selling to ${exchange}`, profit)
+                        continue
+                    }
+                }
+
+                // we can buy from the other exchange and sell to this one
+                if (! opps[compareExchange][askPrice]) {
+                    opps[compareExchange][askPrice] = {}
+                }
+
+                if (! opps[compareExchange][askPrice][bid.price]) {
+                    opps[compareExchange][askPrice][bid.price] = {
+                        buy: 0,
+                        sell: 0,
+                    }
+                }
+
+                opps[compareExchange][askPrice][bid.price].buy += availableLiquidity
+                opps[compareExchange][askPrice][bid.price].sell += desiredLiquidity
+            }
+
+            this.setState({opps})
+        }
+    }
+
     componentDidMount() {
         this.poloniex = poloniexReader.client()
         this.binance = binanceReader.client()
 
         // binance handlers
         {
-            // this.binance.on('data', d => console.log('BINANE>>>>', d))
-
             this.binance.on('bid', bid => {
-
-                const newPrices = prices.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
-
-                const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
-                newTotals.binance[bid.price] = {
-                    exchangeID: 'binance',
-                    total: bid.amount,
-                }
-
-                this.setState({bidPriceToTotal: newTotals})
-                this.setState({sortedBidPrices: newPrices})
-
-                const desiredLiquidity = parseFloat(bid.amount)
-
-                if (! desiredLiquidity) {
-                    return
-                }
-
-                // identify arbitrage opportunities
-                {
-                    const opps = JSON.parse(JSON.stringify(this.state.opps))
-
-                    const sellPrice = parseFloat(bid.price)
-                    const binanceFee = sellPrice * 0.1
-
-                    for (const askPrice in this.state.askPriceToTotal.poloniex) {
-
-                        const availableLiquidity = parseFloat(this.state.askPriceToTotal.poloniex[askPrice].total)
-
-                        if (! availableLiquidity) {
-                            continue
-                        }
-
-                        let buyPrice
-                        {
-                            buyPrice = parseFloat(askPrice)
-                            const poloniexFee = buyPrice * 0.125
-                            const profit = (sellPrice - buyPrice - (binanceFee + poloniexFee))
-
-                            if (profit <= 0) {
-                                console.log('no profit', profit)
-                                continue
-                            }
-                        }
-
-                        if (! opps.poloniex[askPrice]) {
-                            opps.poloniex[askPrice] = {}
-                        }
-
-                        if (! opps.poloniex[askPrice][bid.price]) {
-                            opps.poloniex[askPrice][bid.price] = {
-                                buy: 0,
-                                sell: 0,
-                            }
-                        }
-
-                        opps.poloniex[askPrice][bid.price].buy += availableLiquidity
-                        opps.poloniex[askPrice][bid.price].sell += desiredLiquidity
-                    }
-
-                    this.setState({opps})
-                }
+                prices.handleBid(bid, 'binance', 'poloniex', this)
             })
 
             this.binance.on('ask', ask => {
-
-                const newPrices = prices.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
-
-                const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
-                newTotals.binance[ask.price] = {
-                    exchangeID: 'binance',
-                    total: ask.amount,
-                }
-
-                this.setState({askPriceToTotal: newTotals})
-                this.setState({sortedAskPrices: newPrices})
-
-                const availableLiquidity = parseFloat(ask.amount)
-
-                if (! availableLiquidity) {
-                    return
-                }
-
-                // identify arbitrage opportunities
-                {
-                    const opps = JSON.parse(JSON.stringify(this.state.opps))
-
-                    const buyPrice = parseFloat(ask.price)
-                    const binanceFee = buyPrice * 0.1
-
-                    for (const bidPrice in this.state.bidPriceToTotal.poloniex) {
-
-                        const desiredLiquidity = parseFloat(this.state.bidPriceToTotal.poloniex[bidPrice].total)
-
-                        if (! desiredLiquidity) {
-                            continue
-                        }
-
-                        let sellPrice
-                        {
-                            sellPrice = parseFloat(bidPrice)
-                            const poloniexFee = sellPrice * 0.125
-                            const profit = (sellPrice - buyPrice - (binanceFee + poloniexFee))
-
-                            if (profit <= 0) {
-                                console.log('no profit', profit)
-                                continue
-                            }
-                        }
-
-                        if (! opps.binance[ask.price]) {
-                            opps.binance[ask.price] = {}
-                        }
-
-                        if (! opps.binance[ask.price][bidPrice]) {
-                            opps.binance[ask.price][bidPrice] = {
-                                buy: 0,
-                                sell: 0,
-                            }
-                        }
-
-                        opps.binance[ask.price][bidPrice].buy += availableLiquidity
-                        opps.binance[ask.price][bidPrice].sell += desiredLiquidity
-                    }
-
-                    this.setState({opps})
-                }
+                prices.handleAsk(ask, 'binance', 'poloniex', this)
             })
         }
 
@@ -195,132 +212,11 @@ export default class OrderBook extends React.Component {
             })
 
             this.poloniex.on('ask', ask => {
-
-                const newPrices = prices.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
-
-                const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
-                newTotals.poloniex[ask.price] = {
-                    exchangeID: 'poloniex',
-                    total: ask.amount,
-                }
-
-                this.setState({askPriceToTotal: newTotals})
-                this.setState({sortedAskPrices: newPrices})
-
-                const availableLiquidity = parseFloat(ask.amount)
-
-                if (! availableLiquidity) {
-                    return
-                }
-
-                // identify arbitrage opportunities
-                {
-                    const opps = JSON.parse(JSON.stringify(this.state.opps))
-
-                    const buyPrice = parseFloat(ask.price)
-                    const poloniexFee = buyPrice * 0.125
-
-                    for (const bidPrice in this.state.bidPriceToTotal.binance) {
-
-                        const desiredLiquidity = parseFloat(this.state.bidPriceToTotal.binance[bidPrice].total)
-
-                        if (! desiredLiquidity) {
-                            continue
-                        }
-
-                        let sellPrice
-                        {
-                            sellPrice = parseFloat(bidPrice)
-                            const binanceFee = sellPrice * 0.1
-                            const profit = (sellPrice - buyPrice - (binanceFee + poloniexFee))
-
-                            if (profit <= 0) {
-                                console.log('no profit', profit)
-                                continue
-                            }
-                        }
-
-                        if (! opps.poloniex[ask.price]) {
-                            opps.poloniex[ask.price] = {}
-                        }
-
-                        if (! opps.poloniex[ask.price][bidPrice]) {
-                            opps.poloniex[ask.price][bidPrice] = {
-                                buy: 0,
-                                sell: 0,
-                            }
-                        }
-
-                        opps.poloniex[ask.price][bidPrice].buy += availableLiquidity
-                        opps.poloniex[ask.price][bidPrice].sell += desiredLiquidity
-                    }
-
-                    this.setState({opps})
-                }
+                prices.handleAsk(ask, 'poloniex', 'binance', this)
             })
 
             this.poloniex.on('bid', bid => {
-                const newPrices = prices.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
-
-                const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
-                newTotals.poloniex[bid.price] = {
-                    exchangeID: 'poloniex',
-                    total: bid.amount,
-                }
-
-                this.setState({bidPriceToTotal: newTotals})
-                this.setState({sortedBidPrices: newPrices})
-
-                const desiredLiquidity = parseFloat(bid.amount)
-
-                if (! desiredLiquidity) {
-                    return
-                }
-
-                // identify arbitrage opportunities
-                {
-                    const opps = JSON.parse(JSON.stringify(this.state.opps))
-
-                    const sellPrice = parseFloat(bid.price)
-                    const poloniexFee = sellPrice * 0.125
-
-                    for (const askPrice in this.state.askPriceToTotal.binance) {
-
-                        const availableLiquidity = parseFloat(this.state.askPriceToTotal.binance[askPrice].total)
-
-                        if (! availableLiquidity) {
-                            continue
-                        }
-
-                        let buyPrice
-                        {
-                            buyPrice = parseFloat(askPrice)
-                            const binanceFee = buyPrice * 0.1
-                            const profit = (sellPrice - buyPrice - (binanceFee + poloniexFee))
-
-                            if (profit <= 0) {
-                                console.log('no profit', profit)
-                                continue
-                            }
-                        }
-
-                        if (! opps.binance[askPrice]) {
-                            opps.binance[askPrice] = {}
-                        }
-
-                        if (! opps.binance[askPrice][bid.price]) {
-                            opps.binance[askPrice][bid.price] = {
-                                buy: 0,
-                                sell: 0,
-                            }
-                        }
-
-                        opps.binance[askPrice][bid.price].buy += availableLiquidity
-                        opps.binance[askPrice][bid.price].sell += desiredLiquidity
-                    }
-
-                    this.setState({opps})
-                }
+                prices.handleBid(bid, 'poloniex', 'binance', this)
             })
         }
 
