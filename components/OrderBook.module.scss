@@ -13,11 +13,21 @@
     }
 }
 
-.orderBook {
+.dashboardWrap {
     display: flex;
-    > * {
+
+    .orderBook {
         flex: 1;
-        border: 1px solid #333;
+        // display: flex;
+        > * {
+            // flex: 1;
+            border: 1px solid #333;
+            padding: 1rem;
+        }
+    }
+
+    .console {
         padding: 1rem;
+        flex: 1;
     }
 }

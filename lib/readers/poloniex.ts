@@ -68,7 +68,7 @@ interface ReaderStreamCommand {
 let customCommand:ReaderStreamCommand
 
 let _client: W3CWebSocket
-let exchangeID: number
+let exchangeID: string = "poloniex"
 
 interface Provider {
     name: string,
@@ -77,7 +77,6 @@ interface Provider {
 
 interface ReaderAPI {
     provider: () => Provider,
-    updatePriceToTotal: (priceToTotal: PriceToTotal, price: string, amount: number) => PriceToTotal,
     start: (n?: number, command?: ReaderStreamCommand) => void,
     restart: () => void,
     close: () => void,
@@ -89,7 +88,6 @@ function client() {
 
     const api: ReaderAPI = {
         provider,
-        updatePriceToTotal,
         start,
         restart,
         close,
@@ -154,9 +152,6 @@ function read(data) : void {
         return
     }
 
-    // we'll add the exchangeID to all event payloads
-    exchangeID = data[0]
-
     // array
     const updates = data[2]
 
@@ -196,9 +191,10 @@ function read(data) : void {
             for (const price in orderBook[0]) {
                 if (count == numberOfRecords) break
 
-                const amount: number = parseFloat(orderBook[0][price])
-
-                totals.askPriceToTotal = updatePriceToTotal(totals.askPriceToTotal, price, amount)
+                totals.askPriceToTotal[price] = {
+                    exchangeID,
+                    total: orderBook[0][price],
+                }
 
                 count++
             }
@@ -214,9 +210,10 @@ function read(data) : void {
             for (const price in orderBook[1]) {
                 if (count == numberOfRecords) break
 
-                const amount: number = parseFloat(orderBook[1][price])
-
-                totals.bidPriceToTotal = updatePriceToTotal(totals.bidPriceToTotal, price, amount)
+                totals.bidPriceToTotal[price] = {
+                    exchangeID,
+                    total: orderBook[1][price],
+                }
 
                 count++
             }
@@ -254,7 +251,7 @@ function read(data) : void {
                     transaction: 'order',
                     type: 'ask',
                     price,
-                    amount: parseFloat(amount),
+                    amount,
                 }
                 emit('ask', payload)
             }
@@ -266,7 +263,7 @@ function read(data) : void {
                     transaction: 'order',
                     type: 'bid',
                     price,
-                    amount: parseFloat(amount),
+                    amount,
                 }
                 emit('bid', payload)
             }
@@ -319,38 +316,6 @@ function read(data) : void {
         }
 
     })
-}
-
-function updatePriceToTotal(
-    priceToTotal: PriceToTotal,
-    price: string,
-    amount: number
-) : PriceToTotal
-{
-
-    // avoid mutation by reference
-    const t: PriceToTotal = JSON.parse(JSON.stringify(priceToTotal))
-
-    if (! t[price]) {
-        t[price] = {
-            exchangeID,
-            total: "0.00000000",
-        }
-    }
-
-    const currentAmount: number = parseFloat(t[price].total)
-
-    // price needs to remain a string
-    // @ts-ignore
-    t[price].total = parseFloat(currentAmount + amount).toFixed(8)
-
-    if (! t[price]) {
-        emit('error', new Error("Price Error"))
-
-        // at least we won't break the UI
-    }
-
-    return t
 }
 
 // close terminates the WS connection
