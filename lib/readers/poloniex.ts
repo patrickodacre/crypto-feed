@@ -96,13 +96,6 @@ function read(data) : void {
     // Order Book message:
     if ("i" === updates[0][0]) {
 
-        const totals:OrderBookEventPayload = {
-            sortedBidPrices: [],
-            sortedAskPrices: [],
-            askPriceToTotal: {},
-            bidPriceToTotal: {},
-        }
-
         // can we have corrupt data from Poloniex?
         if (! updates[0][1] || ! updates[0][1].orderBook) {
             emit('error', new Error("There is a problem with the order book."))
@@ -124,16 +117,17 @@ function read(data) : void {
             for (const price in orderBook[0]) {
                 if (count == numberOfRecords) break
 
-                totals.askPriceToTotal[price] = {
+                const payload: OrderEventPayload = {
                     exchangeID,
-                    total: orderBook[0][price],
+                    transaction: 'order',
+                    type: 'ask',
+                    price,
+                    amount: orderBook[0][price],
                 }
+                emit('ask', payload)
 
                 count++
             }
-
-            // ASC order b/c with ASKS users would be interested in the lowest asks
-            totals.sortedAskPrices = Object.keys(totals.askPriceToTotal).sort()
         }
 
         // bids
@@ -143,19 +137,18 @@ function read(data) : void {
             for (const price in orderBook[1]) {
                 if (count == numberOfRecords) break
 
-                totals.bidPriceToTotal[price] = {
+                const payload: OrderEventPayload = {
                     exchangeID,
-                    total: orderBook[1][price],
+                    transaction: 'order',
+                    type: 'bid',
+                    price,
+                    amount: orderBook[1][price],
                 }
+                emit('bid', payload)
 
                 count++
             }
-
-            // DESC order b/c with BIDS users would be interested in the highest bids
-            totals.sortedBidPrices = Object.keys(totals.bidPriceToTotal).sort((a:string,b:string) => parseFloat(b)-parseFloat(a))
         }
-
-        emit('orderbook', totals)
 
         return
     }

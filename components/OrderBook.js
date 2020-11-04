@@ -85,11 +85,6 @@ export default class OrderBook extends React.Component {
 
         // poloniex handlers
         {
-            // initialize the order book
-            this.poloniex.on('orderbook', ({sortedAskPrices, sortedBidPrices, askPriceToTotal, bidPriceToTotal}) => {
-                // this.setState({sortedAskPrices, sortedBidPrices, askPriceToTotal, bidPriceToTotal})
-            })
-
             // restart to refresh the books
             // this is more reliable than trying to match
             // trades with orders
