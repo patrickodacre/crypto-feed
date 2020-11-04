@@ -3,7 +3,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import poloniexReader from "../lib/readers/poloniex.ts"
 import binanceReader from "../lib/readers/binance.ts"
 import styles from './OrderBook.module.scss'
-import exchange from '../lib/exchange'
+import exchange from '../lib/exchange.ts'
 
 export default class OrderBook extends React.Component {
 
