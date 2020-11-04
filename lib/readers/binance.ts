@@ -1,5 +1,4 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import axios from 'axios'
 
 export default {
     client,
