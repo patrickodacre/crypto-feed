@@ -55,7 +55,7 @@ type ReaderStreamCommand = {
 }
 
 type ReaderAPI = {
-    start: (n?: number, command?: ReaderStreamCommand) => void
+    start: (...args?: any) => void
     restart: () => void
     close: () => void
     read: (data?: any) => void

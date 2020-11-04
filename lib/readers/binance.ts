@@ -1,17 +1,13 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import EventEmitter from "../eventEmitter"
 
 export default {
     client,
 }
 
-const events: EventsObj = {}
-const ASK:number = 0
-const SELL:number = 0
-const BID:number = 1
-const BUY:number = 1
-const DEFAULT_NUM_OF_RECORDS:number = 20
-let numberOfRecords:number
-let customCommand:ReaderStreamCommand
+const eventEmitter = EventEmitter()
+let depth:number
+let symbol:string
 
 let _client: W3CWebSocket
 let exchangeID: string = "binance"
@@ -31,21 +27,24 @@ function client() {
     return api
 }
 
+function on(evt: string, cb: () => any) : void {
+    eventEmitter.on(evt, cb)
+}
+
 // start begins reading the WS stream.
 // the WS stream doesn't seem to offer an option to
 // limit the number of records returned with the
 // initial orderbook payload, so we'll have to
 // limit the records ourselves here.
-function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand = null) : void {
+function start(_symbol: string = "ethbtc", _depth: number = 5) : void {
 
-    _client = new W3CWebSocket('wss://stream.binance.com:9443/ws/ethbtc@depth5')
+    symbol = _symbol
+    depth = _depth
 
-    // in read() we'll limit the number of
-    // records we write to our order books
-    numberOfRecords = n
+    _client = new W3CWebSocket(`wss://stream.binance.com:9443/ws/${symbol}@depth${depth}`)
 
     _client.onopen = () => {
-        emit('open', true)
+        eventEmitter.emit('open', true)
 
         return
     }
@@ -57,7 +56,7 @@ function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand 
 
 function restart() : void {
     _client.close()
-    start(numberOfRecords, customCommand)
+    start(symbol, depth)
 }
 
 function read(data) : void {
@@ -65,7 +64,7 @@ function read(data) : void {
     // allow event listeners to work with the raw data,
     // though in most cases it will be better to
     // listen to the specific events for bid, ask, etc.
-    emit('data', data)
+    eventEmitter.emit('data', data)
 
     // bids
     {
@@ -81,7 +80,7 @@ function read(data) : void {
                 price,
                 amount,
             }
-            emit('bid', payload)
+            eventEmitter.emit('bid', payload)
         })
     }
 
@@ -99,31 +98,13 @@ function read(data) : void {
                 price,
                 amount,
             }
-            emit('ask', payload)
+            eventEmitter.emit('ask', payload)
         })
     }
 }
 
 // close terminates the WS connection
 function close() : void {
-    emit('close', true)
+    eventEmitter.emit('close', true)
     _client.close()
-}
-
-function on(evt: string, cb: () => any) : void {
-    if (! events[evt]) {
-        events[evt] = new Array<((payload?: any) => void)>()
-    }
-
-    events[evt].push(cb)
-}
-
-function emit(evt: string, payload) : void {
-    if (! events[evt] || ! Array.isArray(events[evt])) {
-        return
-    }
-
-    events[evt].forEach(cb => {
-        cb(payload)
-    })
 }
