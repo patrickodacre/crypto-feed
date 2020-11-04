@@ -21,7 +21,6 @@ let exchangeID: string = "poloniex"
 function client() {
 
     const api: ReaderAPI = {
-        provider,
         start,
         restart,
         close,
@@ -256,13 +255,6 @@ function read(data) : void {
 function close() : void {
     emit('close', true)
     _client.close()
-}
-
-function provider() : Provider {
-    return {
-        name: "poloniex",
-        url: "https://poloniex.com",
-    }
 }
 
 function on(evt: string, cb: () => any) : void {
