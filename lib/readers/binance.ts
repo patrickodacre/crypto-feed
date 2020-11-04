@@ -1,7 +1,6 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import axios from 'axios'
 
-// Poloniex Reader
 export default {
     client,
 }
@@ -40,7 +39,6 @@ function client() {
 // limit the records ourselves here.
 function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand = null) : void {
 
-    // _client = new W3CWebSocket('wss://dex.binance.org/api/ws')
     _client = new W3CWebSocket('wss://stream.binance.com:9443/ws/ethbtc@depth5')
 
     // in read() we'll limit the number of
@@ -58,15 +56,11 @@ function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand 
     }
 }
 
-// restart allows us to refresh the order book
-// after a trade, which ensures we have the most
-// up to date asks / bids in the UI
 function restart() : void {
     _client.close()
     start(numberOfRecords, customCommand)
 }
 
-// read returns [data, error]
 function read(data) : void {
 
     // allow event listeners to work with the raw data,

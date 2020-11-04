@@ -62,9 +62,6 @@ function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand 
     }
 }
 
-// restart allows us to refresh the order book
-// after a trade, which ensures we have the most
-// up to date asks / bids in the UI
 function restart() : void {
     _client.close()
     start(numberOfRecords, customCommand)
@@ -78,14 +75,11 @@ function read(data) : void {
     // listen to the specific events for bid, ask, etc.
     emit('data', data)
 
-    // just return the totals we have,
-    // this is just a heartbeat from Poloniex
     if (data === 1010) {
         emit('heartbeat', true)
         return
     }
 
-    // array
     const updates = data[2]
 
     if (! updates) {

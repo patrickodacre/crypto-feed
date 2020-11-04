@@ -85,9 +85,6 @@ export default class OrderBook extends React.Component {
 
         // poloniex handlers
         {
-            // restart to refresh the books
-            // this is more reliable than trying to match
-            // trades with orders
             this.poloniex.on('trade', trade => {
                 // console.log('restarting', trade)
                 // this.poloniex.restart(20)
