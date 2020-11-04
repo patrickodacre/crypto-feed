@@ -5,7 +5,7 @@ export default {
     arbitrageBid,
 }
 
-const fees = {
+const fees: ExchangeFees = {
     'poloniex' : 0.125,
     'binance' : 0.1,
 }
