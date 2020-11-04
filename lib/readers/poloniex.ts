@@ -5,54 +5,7 @@ export default {
     client,
 }
 
-interface PriceToTotal {
-    [key: string]: {exchangeID: number, total: string}
-}
-
-interface EventsObj {
-    [key: string]: ((payload?: any) => void)[]
-}
 const events: EventsObj = {}
-
-// event payloads
-interface OrderBookEventPayload {
-    sortedBidPrices: string[],
-    sortedAskPrices: string[],
-    askPriceToTotal: PriceToTotal,
-    bidPriceToTotal: PriceToTotal
-}
-
-interface OrderEventPayload {
-    exchangeID: number,
-    transaction:string,
-    type:string,
-    price:string,
-    amount:number
-}
-
-interface TradeEventPayload {
-    exchangeID: number,
-    tradeID:string,
-    transaction:string,
-    type:string,
-    price:string,
-    amount:number,
-    timestamp:number
-}
-
-interface OrderBookObj {
-    [key:string]: number
-}
-
-interface OrderBookUpdateObj {
-    currencyPair: string,
-    orderBook: OrderBookObj[]
-}
-
-type OrderBookUpdate = [string, OrderBookUpdateObj]
-type OrderUpdate = [string, number, string, string]
-type TradeUpdate = [string, string, number, string, string, number]
-
 const ASK:number = 0
 const SELL:number = 0
 const BID:number = 1
@@ -60,29 +13,10 @@ const BUY:number = 1
 const DEFAULT_NUM_OF_RECORDS:number = 20
 let numberOfRecords:number
 
-interface ReaderStreamCommand {
-    command: string,
-    channel: string
-}
-
 let customCommand:ReaderStreamCommand
 
 let _client: W3CWebSocket
 let exchangeID: string = "poloniex"
-
-interface Provider {
-    name: string,
-    url: string,
-}
-
-interface ReaderAPI {
-    provider: () => Provider,
-    start: (n?: number, command?: ReaderStreamCommand) => void,
-    restart: () => void,
-    close: () => void,
-    read: (data?: any) => void,
-    on: (evt: string, payload: any) => void,
-}
 
 function client() {
 
