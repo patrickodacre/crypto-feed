@@ -1,18 +1,22 @@
 type OrderUpdate = [string, number, string, string]
 type TradeUpdate = [string, string, number, string, string, number]
 
-interface PriceToTotal {
+type PriceToTotal = {
     exchangeID: string
     total: string
 }
 
 type EventHandler = ((payload?: any) => void)
-interface EventsObj {
+type EventsObj = {
     [key: string]: EventHandler[]
 }
 
+type ExchangeFees = {
+    [key: string]: number
+}
+
 // event payloads
-interface OrderBookEventPayload {
+type OrderBookEventPayload = {
     sortedBidPrices: string[]
     sortedAskPrices: string[]
     askPriceToTotal: {
@@ -23,7 +27,7 @@ interface OrderBookEventPayload {
     }
 }
 
-interface OrderEventPayload {
+type OrderEventPayload = {
     exchangeID: string
     transaction:string
     type:string
@@ -31,7 +35,7 @@ interface OrderEventPayload {
     amount:string
 }
 
-interface TradeEventPayload {
+type TradeEventPayload = {
     exchangeID: string
     tradeID:string
     transaction:string
@@ -41,16 +45,16 @@ interface TradeEventPayload {
     timestamp:number
 }
 
-interface OrderBookObj {
+type OrderBookObj = {
     [key:string]: number
 }
 
-interface ReaderStreamCommand {
+type ReaderStreamCommand = {
     command: string
     channel: string
 }
 
-interface ReaderAPI {
+type ReaderAPI = {
     start: (n?: number, command?: ReaderStreamCommand) => void
     restart: () => void
     close: () => void
@@ -58,7 +62,7 @@ interface ReaderAPI {
     on: (evt: string, payload?: any) => void
 }
 
-interface OpportunitiesObj {
+type OpportunitiesObj = {
     // exchange name/id
     [key: string]: {
         // buy/ask price
