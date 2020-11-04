@@ -222,7 +222,7 @@ function read(data) : void {
                     transaction: 'trade',
                     type: 'sell',
                     price,
-                    amount: parseFloat(amount),
+                    amount,
                     timestamp,
                 }
 
@@ -238,7 +238,7 @@ function read(data) : void {
                     transaction: 'trade',
                     type: 'buy',
                     price,
-                    amount: parseFloat(amount),
+                    amount,
                     timestamp,
                 }
 
