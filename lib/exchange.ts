@@ -8,6 +8,7 @@ export default {
 const fees: ExchangeFees = {
     'poloniex' : 0.125,
     'binance' : 0.1,
+    'bittrex' : 0.1,
 }
 
 // arbitrageBid checks the incoming BID order to see

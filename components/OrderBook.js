@@ -2,6 +2,7 @@ import React from 'react'
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import poloniexReader from "../lib/readers/poloniex.ts"
 import binanceReader from "../lib/readers/binance.ts"
+import bittrexReader from "../lib/readers/bittrex.ts"
 import styles from './OrderBook.module.scss'
 import exchange from '../lib/exchange.ts'
 
@@ -12,12 +13,14 @@ export default class OrderBook extends React.Component {
 
         this.poloniex = null
         this.binance = null
+        this.bittrex = null
 
         this.state = {
             opps: {
                 // buy => sells
                 poloniex: {},
                 binance: {},
+                bittrex: {},
             },
             sortedAskPrices: [],
             sortedBidPrices: [],
@@ -25,10 +28,12 @@ export default class OrderBook extends React.Component {
             askPriceToTotal: {
                 poloniex: {},
                 binance: {},
+                bittrex: {},
             },
             bidPriceToTotal: {
                 poloniex: {},
                 binance: {},
+                bittrex: {},
             },
         }
     }
@@ -36,6 +41,53 @@ export default class OrderBook extends React.Component {
     componentDidMount() {
         this.poloniex = poloniexReader.client()
         this.binance = binanceReader.client()
+        this.bittrex = bittrexReader.client()
+
+        // bittrex handlers
+        {
+            this.bittrex.on('bid', bid => {
+
+                const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
+
+                const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
+                newTotals.bittrex[bid.price] = {
+                    exchangeID: 'bittrex',
+                    total: bid.amount,
+                }
+
+                this.setState({bidPriceToTotal: newTotals})
+                this.setState({sortedBidPrices: newPrices})
+
+                const [o, ok] = exchange.arbitrageBid(bid, 'bittrex', this.state.askPriceToTotal.poloniex, 'poloniex')
+
+                if (! ok) {
+                    return
+                }
+
+                this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
+            })
+
+            this.bittrex.on('ask', ask => {
+                const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
+
+                const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
+                newTotals.bittrex[ask.price] = {
+                    exchangeID: 'bittrex',
+                    total: ask.amount,
+                }
+
+                this.setState({askPriceToTotal: newTotals})
+                this.setState({sortedAskPrices: newPrices})
+
+                const [o, ok] = exchange.arbitrageAsk(ask, 'bittrex', this.state.bidPriceToTotal.poloniex, 'poloniex')
+
+                if (! ok) {
+                    return
+                }
+
+                this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
+            })
+        }
 
         // binance handlers
         {
@@ -140,7 +192,8 @@ export default class OrderBook extends React.Component {
 
         }
 
-        this.binance.start()
+        this.bittrex.start()
+        // this.binance.start()
         this.poloniex.start()
     }
 
@@ -150,8 +203,9 @@ export default class OrderBook extends React.Component {
     }
 
     closeConnection = () => {
-        this.poloniex.close()
-        this.binance.close()
+        if (this.poloniex) this.poloniex.close()
+        if (this.binance) this.binance.close()
+        if (this.bittrex) this.bittrex.close()
     }
 
     render () {
@@ -167,6 +221,10 @@ export default class OrderBook extends React.Component {
                   ? this.state.askPriceToTotal.binance[p].total
                   : 0
 
+            const bittrexAmount = typeof this.state.askPriceToTotal.bittrex[p] !== 'undefined'
+                  ? this.state.askPriceToTotal.bittrex[p].total
+                  : 0
+
             let pAmount = "0.00000000"
             let pTotal = "0.00000000"
             if (poloniexAmount > 0) {
@@ -181,6 +239,13 @@ export default class OrderBook extends React.Component {
                 bTotal = (parseFloat(p) * bAmount).toFixed(8)
             }
 
+            let bitAmount = "0.00000000"
+            let bitTotal = "0.00000000"
+            if (bittrexAmount > 0) {
+                bAmount = parseFloat(bittrexAmount).toFixed(8)
+                bTotal = (parseFloat(p) * bAmount).toFixed(8)
+            }
+
             return (
                 <div className={styles.dashboardRow} key={p.toString()}>
                     <div className={styles.total}>{pTotal}</div>
@@ -188,6 +253,8 @@ export default class OrderBook extends React.Component {
                     <div className={styles.price}>{p}</div>
                     <div className={styles.amount}>{bAmount}</div>
                     <div className={styles.total}>{bTotal}</div>
+                    <div className={styles.amount}>{bitAmount}</div>
+                    <div className={styles.total}>{bitTotal}</div>
                 </div>
             )
 
@@ -203,6 +270,10 @@ export default class OrderBook extends React.Component {
                   ? this.state.bidPriceToTotal.binance[p].total
                   : 0
 
+            const bittrexAmount = this.state.bidPriceToTotal.bittrex[p]
+                  ? this.state.bidPriceToTotal.bittrex[p].total
+                  : 0
+
             let pAmount = "0.00000000"
             let pTotal = "0.00000000"
             if (poloniexAmount > 0) {
@@ -217,6 +288,13 @@ export default class OrderBook extends React.Component {
                 bTotal = (parseFloat(p) * bAmount).toFixed(8)
             }
 
+            let bitAmount = "0.00000000"
+            let bitTotal = "0.00000000"
+            if (bittrexAmount > 0) {
+                bAmount = parseFloat(bittrexAmount).toFixed(8)
+                bTotal = (parseFloat(p) * bAmount).toFixed(8)
+            }
+
             return (
                 <div className={styles.dashboardRow} key={p.toString()}>
                     <div className={styles.total}>{pTotal}</div>
@@ -224,6 +302,8 @@ export default class OrderBook extends React.Component {
                     <div className={styles.price}>{p}</div>
                     <div className={styles.amount}>{bAmount}</div>
                     <div className={styles.total}>{bTotal}</div>
+                    <div className={styles.amount}>{bitAmount}</div>
+                    <div className={styles.total}>{bitTotal}</div>
                 </div>
             )
         })
@@ -231,6 +311,7 @@ export default class OrderBook extends React.Component {
         // Arbitrage Opportunities
         const buyFromBinancePrices = Object.keys(this.state.opps.binance)
         const buyFromPoloniexPrices = Object.keys(this.state.opps.poloniex)
+        const buyFromBittrexPrices = Object.keys(this.state.opps.bittrex)
 
         const poloniexBuys = buyFromPoloniexPrices.map((buyPrice, i) => {
 
@@ -304,6 +385,42 @@ export default class OrderBook extends React.Component {
             )
         })
 
+        const bittrexBuys = buyFromBittrexPrices.map((buyPrice, i) => {
+
+            const key = buyPrice + i + ""
+
+            const poloniexSellPrices = Object.keys(this.state.opps.bittrex[buyPrice])
+
+            const opps = poloniexSellPrices.map((sellPrice, i) => {
+                const key = sellPrice + i + ""
+
+                const bFee = buyPrice * 0.1
+                const pFee = sellPrice * 0.125
+                const profit = (sellPrice - buyPrice - (bFee + bFee))
+
+                const profitClass = profit > 0
+                      ? 'green'
+                      : 'red'
+
+                return (
+                    <div className={styles.opp} key={key}>
+                        <div>Sell at: {parseFloat(sellPrice)} = Profit <span className={styles[profitClass]}>{profit}</span></div>
+                        <div className={styles.oppBuySell}>
+                            <div>Buy Amount: {this.state.opps.bittrex[buyPrice][sellPrice].buy}</div>
+                            <div>Sell Amount: {this.state.opps.bittrex[buyPrice][sellPrice].sell}</div>
+                        </div>
+                    </div>
+                )
+            })
+
+            return (
+                <div className={styles.oppGroup} key={key}>
+                    <div>Buy From Bittrex at {parseFloat(buyPrice)}</div>
+                    {opps}
+                </div>
+            )
+        })
+
         return (
             <div>
                 <button onClick={this.closeConnection}>Close</button>
@@ -322,6 +439,7 @@ export default class OrderBook extends React.Component {
                     <div className={styles.console}>
                         <div>{poloniexBuys}</div>
                         <div>{binanceBuys}</div>
+                        <div>{bittrexBuys}</div>
                     </div>
                 </div>
 

@@ -10,10 +10,16 @@
   },
   "dependencies": {
     "axios": "^0.21.0",
+    "express": "^4.17.1",
+    "http": "0.0.1-security",
     "next": "10.0.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "sass": "^1.28.0",
+    "signalr-client": "0.0.20",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.1",
+    "uuid": "^8.3.1",
     "websocket": "^1.0.32"
   },
   "devDependencies": {
