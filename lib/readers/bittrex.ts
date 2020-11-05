@@ -6,12 +6,9 @@ export default {
 }
 
 const eventEmitter = EventEmitter()
-const DEFAULT_NUM_OF_RECORDS:number = 20
-let numberOfRecords:number
-let customCommand:ReaderStreamCommand
 
 let _client
-let exchangeID: string = "bittrex"
+const exchangeID: string = "bittrex"
 
 function client() {
 
@@ -28,7 +25,7 @@ function client() {
     return api
 }
 
-function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand = null) : void {
+function start() : void {
 
     // Bittrex uses signalr so I can't just connect with
     // a websocket client from the browser. I had to use
@@ -43,7 +40,7 @@ function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand 
 
 function restart() : void {
     _client.close()
-    start(numberOfRecords, customCommand)
+    start()
 }
 
 function read(data) : void {
