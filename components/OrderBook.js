@@ -347,16 +347,16 @@ export default class OrderBook extends React.Component {
             }
 
 
-            // <div 
+            // <div className={styles.amount}>{bAmount}</div>
             // <div className={styles.total}>{bTotal}</div>
 
             return (
                 <div className={styles.dashboardRow} key={p.toString()}>
-                    <div className={styles.total}>{pTotal}</div>
-                    <div className={styles.amount}>{pAmount}</div>
+                    <div className={styles.total_1}>{pTotal}</div>
+                    <div className={styles.amount_1}>{pAmount}</div>
                     <div className={styles.price}>{p}</div>
-                    <div className={styles.amount}>{bitAmount}</div>
-                    <div className={styles.total}>{bitTotal}</div>
+                    <div className={styles.amount_2}>{bitAmount}</div>
+                    <div className={styles.total_2}>{bitTotal}</div>
                 </div>
             )
 
@@ -414,11 +414,11 @@ export default class OrderBook extends React.Component {
 
             return (
                 <div className={styles.dashboardRow} key={p.toString()}>
-                    <div className={styles.total}>{pTotal}</div>
-                    <div className={styles.amount}>{pAmount}</div>
+                    <div className={styles.total_1}>{pTotal}</div>
+                    <div className={styles.amount_1}>{pAmount}</div>
                     <div className={styles.price}>{p}</div>
-                    <div className={styles.amount}>{bitAmount}</div>
-                    <div className={styles.total}>{bitTotal}</div>
+                    <div className={styles.amount_2}>{bitAmount}</div>
+                    <div className={styles.total_2}>{bitTotal}</div>
                 </div>
             )
         })
@@ -572,8 +572,8 @@ export default class OrderBook extends React.Component {
                         <div className={styles.dashboardRows}>
                             <h2>Asks</h2>
                             <div className={styles.titles}>
-                                <div>Poloniex</div>
-                                <div>Bittrex</div>
+                                <div className={styles.poloniex}>Poloniex</div>
+                                <div className={styles.bittrex}>Bittrex</div>
                             </div>
                             <div className={styles.rowHeader}>
                                 <div>Total BTC</div>
@@ -588,8 +588,8 @@ export default class OrderBook extends React.Component {
                         <div className={styles.dashboardRows}>
                             <h2>Bids</h2>
                             <div className={styles.titles}>
-                                <div>Poloniex</div>
-                                <div>Bittrex</div>
+                                <div className={styles.poloniex}>Poloniex</div>
+                                <div className={styles.bittrex}>Bittrex</div>
                             </div>
                             <div className={styles.rowHeader}>
                                 <div>Total BTC</div>

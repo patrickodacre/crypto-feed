@@ -1,16 +1,36 @@
 .dashboardRow {
     display: flex;
     align-items: center;
-    justify-items: space-between;
-    padding: 0.5rem 0.25rem;
+    justify-content: space-between;
+    padding: 0 0.25rem;
 
     .price,
-    .amount,
-    .total {
-        padding: 0 0.5rem;
+    .amount_1,
+    .amount_2,
+    .total_1,
+    .total_2 {
+        padding: 0.5rem;
         flex: 1;
         text-align: right;
+        width: 20%;
     }
+
+    .amount_1,
+    .total_1 {
+        background: lightblue;
+    }
+
+    .amount_2,
+    .total_2 {
+        background: lightgreen;
+    }
+}
+
+.poloniex {
+    background: lightblue;
+}
+.bittrex {
+    background: lightgreen;
 }
 
 .dashboardWrap {
