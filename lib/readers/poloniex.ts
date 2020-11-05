@@ -11,9 +11,7 @@ const SELL:number = 0
 const BID:number = 1
 const BUY:number = 1
 const DEFAULT_NUM_OF_RECORDS:number = 20
-let numberOfRecords:number
-
-let customCommand:ReaderStreamCommand
+let numberOfRecords: number
 
 let _client: W3CWebSocket
 let exchangeID: string = "poloniex"
@@ -22,7 +20,6 @@ function client() {
 
     const api: ReaderAPI = {
         start,
-        restart,
         close,
         read,
 
@@ -38,33 +35,21 @@ function client() {
 // limit the number of records returned with the
 // initial orderbook payload, so we'll have to
 // limit the records ourselves here.
-function start(n: number = DEFAULT_NUM_OF_RECORDS, command: ReaderStreamCommand = null) : void {
+function start(n: number = DEFAULT_NUM_OF_RECORDS, channel: string = "BTC_ETH") : void {
+
+    numberOfRecords = n
 
     _client = new W3CWebSocket('wss://api2.poloniex.com')
-
-    // in read() we'll limit the number of
-    // records we write to our order books
-    numberOfRecords = n
 
     _client.onopen = () => {
         emit('open', true)
 
-        if (command) {
-            customCommand = command
-            _client.send(JSON.stringify(command))
-        } else {
-            _client.send(JSON.stringify({"command": "subscribe", "channel": "BTC_ETH"}))
-        }
+        _client.send(JSON.stringify({command: "subscribe", channel}))
     }
 
     _client.onmessage = ({data}) => {
         read(JSON.parse(data))
     }
-}
-
-function restart() : void {
-    _client.close()
-    start(numberOfRecords, customCommand)
 }
 
 // read returns [data, error]
