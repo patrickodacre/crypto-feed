@@ -51,7 +51,7 @@ function arbitrageBid(
             const profit: number = (sellPrice - buyPrice - (exchangeFee + buyFee))
 
             if (profit <= 0) {
-                console.log(`no profit buying from ${compareExchange} and selling to ${exchange}`, profit)
+                // console.log(`no profit buying from ${compareExchange} and selling to ${exchange}`, profit)
                 continue
             }
         }
@@ -116,7 +116,7 @@ function arbitrageAsk(
             const profit: number = (sellPrice - buyPrice - (buyFee + sellFee))
 
             if (profit <= 0) {
-                console.log(`no profit buying from ${exchange} and selling to ${compareExchange}`, profit)
+                // console.log(`no profit buying from ${exchange} and selling to ${compareExchange}`, profit)
                 continue
             }
         }
