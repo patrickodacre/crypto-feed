@@ -217,9 +217,9 @@ export default class OrderBook extends React.Component {
                   ? this.state.askPriceToTotal.poloniex[p].total
                   : 0
 
-            const binanceAmount = typeof this.state.askPriceToTotal.binance[p] !== 'undefined'
-                  ? this.state.askPriceToTotal.binance[p].total
-                  : 0
+            // const binanceAmount = typeof this.state.askPriceToTotal.binance[p] !== 'undefined'
+                  // ? this.state.askPriceToTotal.binance[p].total
+                  // : 0
 
             const bittrexAmount = typeof this.state.askPriceToTotal.bittrex[p] !== 'undefined'
                   ? this.state.askPriceToTotal.bittrex[p].total
@@ -232,27 +232,29 @@ export default class OrderBook extends React.Component {
                 pTotal = (parseFloat(p) * pAmount).toFixed(8)
             }
 
-            let bAmount = "0.00000000"
-            let bTotal = "0.00000000"
-            if (binanceAmount > 0) {
-                bAmount = parseFloat(binanceAmount).toFixed(8)
-                bTotal = (parseFloat(p) * bAmount).toFixed(8)
-            }
+            // let bAmount = "0.00000000"
+            // let bTotal = "0.00000000"
+            // if (binanceAmount > 0) {
+                // bAmount = parseFloat(binanceAmount).toFixed(8)
+                // bTotal = (parseFloat(p) * bAmount).toFixed(8)
+            // }
 
             let bitAmount = "0.00000000"
             let bitTotal = "0.00000000"
             if (bittrexAmount > 0) {
-                bAmount = parseFloat(bittrexAmount).toFixed(8)
-                bTotal = (parseFloat(p) * bAmount).toFixed(8)
+                bitAmount = parseFloat(bittrexAmount).toFixed(8)
+                bitTotal = (parseFloat(p) * bitAmount).toFixed(8)
             }
+
+
+            // <div className={styles.amount}>{bAmount}</div>
+            // <div className={styles.total}>{bTotal}</div>
 
             return (
                 <div className={styles.dashboardRow} key={p.toString()}>
                     <div className={styles.total}>{pTotal}</div>
                     <div className={styles.amount}>{pAmount}</div>
                     <div className={styles.price}>{p}</div>
-                    <div className={styles.amount}>{bAmount}</div>
-                    <div className={styles.total}>{bTotal}</div>
                     <div className={styles.amount}>{bitAmount}</div>
                     <div className={styles.total}>{bitTotal}</div>
                 </div>
@@ -266,9 +268,9 @@ export default class OrderBook extends React.Component {
                   ? this.state.bidPriceToTotal.poloniex[p].total
                   : 0
 
-            const binanceAmount = this.state.bidPriceToTotal.binance[p]
-                  ? this.state.bidPriceToTotal.binance[p].total
-                  : 0
+            // const binanceAmount = this.state.bidPriceToTotal.binance[p]
+                  // ? this.state.bidPriceToTotal.binance[p].total
+                  // : 0
 
             const bittrexAmount = this.state.bidPriceToTotal.bittrex[p]
                   ? this.state.bidPriceToTotal.bittrex[p].total
@@ -281,27 +283,28 @@ export default class OrderBook extends React.Component {
                 pTotal = (parseFloat(p) * pAmount).toFixed(8)
             }
 
-            let bAmount = "0.00000000"
-            let bTotal = "0.00000000"
-            if (binanceAmount > 0) {
-                bAmount = parseFloat(binanceAmount).toFixed(8)
-                bTotal = (parseFloat(p) * bAmount).toFixed(8)
-            }
+            // let bAmount = "0.00000000"
+            // let bTotal = "0.00000000"
+            // if (binanceAmount > 0) {
+                // bAmount = parseFloat(binanceAmount).toFixed(8)
+                // bTotal = (parseFloat(p) * bAmount).toFixed(8)
+            // }
 
             let bitAmount = "0.00000000"
             let bitTotal = "0.00000000"
             if (bittrexAmount > 0) {
-                bAmount = parseFloat(bittrexAmount).toFixed(8)
-                bTotal = (parseFloat(p) * bAmount).toFixed(8)
+                bitAmount = parseFloat(bittrexAmount).toFixed(8)
+                bitTotal = (parseFloat(p) * bitAmount).toFixed(8)
             }
+
+            // <div className={styles.amount}>{bAmount}</div>
+            // <div className={styles.total}>{bTotal}</div>
 
             return (
                 <div className={styles.dashboardRow} key={p.toString()}>
                     <div className={styles.total}>{pTotal}</div>
                     <div className={styles.amount}>{pAmount}</div>
                     <div className={styles.price}>{p}</div>
-                    <div className={styles.amount}>{bAmount}</div>
-                    <div className={styles.total}>{bTotal}</div>
                     <div className={styles.amount}>{bitAmount}</div>
                     <div className={styles.total}>{bitTotal}</div>
                 </div>
