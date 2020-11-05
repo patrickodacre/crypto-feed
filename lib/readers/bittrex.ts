@@ -14,7 +14,6 @@ function client() {
 
     const api: ReaderAPI = {
         start,
-        restart,
         close,
         read,
 
@@ -36,11 +35,6 @@ function start() : void {
     _client.on('bittrex', data => {
         read(data)
     })
-}
-
-function restart() : void {
-    _client.close()
-    start()
 }
 
 function read(data) : void {
