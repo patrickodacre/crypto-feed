@@ -6,21 +6,16 @@ export default {
 }
 
 const eventEmitter = EventEmitter()
-let depth:number
-let symbol:string
 
 let _client: W3CWebSocket
-let exchangeID: string = "binance"
+const exchangeID: string = "binance"
 
 function client() {
 
     const api: ReaderAPI = {
         start,
-        restart,
         close,
         read,
-
-        // data, heartbeat, update, bid, ask, sell, buy, orderbook, error
         on,
     }
 
@@ -32,14 +27,7 @@ function on(evt: string, cb: () => any) : void {
 }
 
 // start begins reading the WS stream.
-// the WS stream doesn't seem to offer an option to
-// limit the number of records returned with the
-// initial orderbook payload, so we'll have to
-// limit the records ourselves here.
-function start(_symbol: string = "ethbtc", _depth: number = 5) : void {
-
-    symbol = _symbol
-    depth = _depth
+function start(symbol: string = "ethbtc", depth: number = 5) : void {
 
     _client = new W3CWebSocket(`wss://stream.binance.com:9443/ws/${symbol}@depth${depth}`)
 
@@ -52,11 +40,6 @@ function start(_symbol: string = "ethbtc", _depth: number = 5) : void {
     _client.onmessage = ({data}) => {
         read(JSON.parse(data))
     }
-}
-
-function restart() : void {
-    _client.close()
-    start(symbol, depth)
 }
 
 function read(data) : void {
