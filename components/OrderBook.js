@@ -203,9 +203,9 @@ export default class OrderBook extends React.Component {
     }
 
     closeConnection = () => {
-        if (this.poloniex) this.poloniex.close()
-        if (this.binance) this.binance.close()
-        if (this.bittrex) this.bittrex.close()
+        this.poloniex.close()
+        this.binance.close()
+        this.bittrex.close()
     }
 
     render () {

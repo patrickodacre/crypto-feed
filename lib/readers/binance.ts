@@ -88,6 +88,7 @@ function read(data) : void {
 
 // close terminates the WS connection
 function close() : void {
+    if (! _client) return
     eventEmitter.emit('close', true)
     _client.close()
 }
