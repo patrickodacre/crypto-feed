@@ -1,10 +1,12 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import EventEmitter from "../eventEmitter"
 
 // Poloniex Reader
 export default {
     client,
 }
 
+const eventEmitter = EventEmitter()
 const events: EventsObj = {}
 const ASK:number = 0
 const SELL:number = 0
@@ -42,7 +44,7 @@ function start(n: number = DEFAULT_NUM_OF_RECORDS, channel: string = "BTC_ETH") 
     _client = new W3CWebSocket('wss://api2.poloniex.com')
 
     _client.onopen = () => {
-        emit('open', true)
+        eventEmitter.emit('open', true)
 
         _client.send(JSON.stringify({command: "subscribe", channel}))
     }
@@ -58,17 +60,17 @@ function read(data) : void {
     // allow event listeners to work with the raw data,
     // though in most cases it will be better to
     // listen to the specific events for bid, ask, etc.
-    emit('data', data)
+    eventEmitter.emit('data', data)
 
     if (data === 1010) {
-        emit('heartbeat', true)
+        eventEmitter.emit('heartbeat', true)
         return
     }
 
     const updates = data[2]
 
     if (! updates) {
-        emit('update', false)
+        eventEmitter.emit('update', false)
         return
     }
 
@@ -77,7 +79,7 @@ function read(data) : void {
 
         // can we have corrupt data from Poloniex?
         if (! updates[0][1] || ! updates[0][1].orderBook) {
-            emit('error', new Error("There is a problem with the order book."))
+            eventEmitter.emit('error', new Error("There is a problem with the order book."))
             return
         }
 
@@ -103,7 +105,7 @@ function read(data) : void {
                     price,
                     amount: orderBook[0][price],
                 }
-                emit('ask', payload)
+                eventEmitter.emit('ask', payload)
 
                 count++
             }
@@ -123,7 +125,7 @@ function read(data) : void {
                     price,
                     amount: orderBook[1][price],
                 }
-                emit('bid', payload)
+                eventEmitter.emit('bid', payload)
 
                 count++
             }
@@ -158,7 +160,7 @@ function read(data) : void {
                     price,
                     amount,
                 }
-                emit('ask', payload)
+                eventEmitter.emit('ask', payload)
             }
 
             // bid
@@ -170,7 +172,7 @@ function read(data) : void {
                     price,
                     amount,
                 }
-                emit('bid', payload)
+                eventEmitter.emit('bid', payload)
             }
         }
 
@@ -198,8 +200,8 @@ function read(data) : void {
                     timestamp,
                 }
 
-                emit('trade', payload)
-                emit('sell', payload)
+                eventEmitter.emit('trade', payload)
+                eventEmitter.emit('sell', payload)
             }
 
             // buy
@@ -214,8 +216,8 @@ function read(data) : void {
                     timestamp,
                 }
 
-                emit('trade', payload)
-                emit('buy', payload)
+                eventEmitter.emit('trade', payload)
+                eventEmitter.emit('buy', payload)
             }
 
         }
@@ -225,24 +227,10 @@ function read(data) : void {
 
 // close terminates the WS connection
 function close() : void {
-    emit('close', true)
+    eventEmitter.emit('close', true)
     _client.close()
 }
 
 function on(evt: string, cb: () => any) : void {
-    if (! events[evt]) {
-        events[evt] = new Array<((payload?: any) => void)>()
-    }
-
-    events[evt].push(cb)
-}
-
-function emit(evt: string, payload) : void {
-    if (! events[evt] || ! Array.isArray(events[evt])) {
-        return
-    }
-
-    events[evt].forEach(cb => {
-        cb(payload)
-    })
+    eventEmitter.on(evt, cb)
 }
