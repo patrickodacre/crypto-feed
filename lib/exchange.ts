@@ -3,6 +3,8 @@ export default {
     insertAskPrice,
     arbitrageAsk,
     arbitrageBid,
+    matchBidToAsk,
+    matchAskToBid,
 }
 
 const fees: ExchangeFees = {
@@ -138,6 +140,52 @@ function arbitrageAsk(
     }
 
     return [opps, true]
+}
+
+function matchAskToBid(
+    ask: OrderEventPayload,
+    sellingOn: string,
+    existingBids: PriceToTotal
+) : OrderMatches
+{
+
+    // the offer is to sell on poloniex
+    // are there any offers to buy on Bittrex?
+    const matches = {[sellingOn]: {}}
+
+    const demand = existingBids[ask.price]
+        ? parseFloat(existingBids[ask.price].total)
+        : 0
+
+    // we'll buy on poloniex to sell on bittrex
+    matches[sellingOn][ask.price] = parseFloat(ask.amount) > 0 && demand > 0
+
+    if (matches[sellingOn][ask.price]) {
+        console.log('match!!')
+    }
+
+    return matches
+}
+
+function matchBidToAsk(
+    bid: OrderEventPayload,
+    sellingOn: string,
+    existingAsks: PriceToTotal
+) : OrderMatches {
+
+    const matches = {[sellingOn]: {}}
+
+    const supply = existingAsks[bid.price]
+        ? parseFloat(existingAsks[bid.price].total)
+        : 0
+
+    matches[sellingOn][bid.price] = parseFloat(bid.amount) > 0 && supply > 0
+
+    if (matches[sellingOn][bid.price]) {
+        console.log('match!!')
+    }
+
+    return matches
 }
 
 function insertAskPrice(asks: string[], price: string) : string[] {

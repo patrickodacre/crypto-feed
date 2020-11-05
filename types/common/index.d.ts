@@ -76,3 +76,8 @@ type OpportunitiesObj = {
     }
 }
 
+type OrderMatches = {
+    [key:string]: {
+        [key:string]: boolean
+    }
+}
