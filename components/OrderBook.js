@@ -47,7 +47,7 @@ export default class OrderBook extends React.Component {
         {
             this.bittrex.on('bid', bid => {
 
-                const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
+                const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price)
 
                 const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
                 newTotals.bittrex[bid.price] = {
@@ -68,7 +68,7 @@ export default class OrderBook extends React.Component {
             })
 
             this.bittrex.on('ask', ask => {
-                const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
+                const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price)
 
                 const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
                 newTotals.bittrex[ask.price] = {
@@ -92,7 +92,7 @@ export default class OrderBook extends React.Component {
         // binance handlers
         {
             this.binance.on('bid', bid => {
-                const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
+                const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price)
 
                 const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
                 newTotals.binance[bid.price] = {
@@ -114,7 +114,7 @@ export default class OrderBook extends React.Component {
 
             this.binance.on('ask', ask => {
 
-                const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
+                const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price)
 
                 const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
                 newTotals.binance[ask.price] = {
@@ -149,7 +149,7 @@ export default class OrderBook extends React.Component {
             })
 
             this.poloniex.on('ask', ask => {
-                const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price).slice(0, 20)
+                const newPrices = exchange.insertAskPrice(this.state.sortedAskPrices, ask.price)
 
                 const newTotals = JSON.parse(JSON.stringify(this.state.askPriceToTotal))
                 newTotals.poloniex[ask.price] = {
@@ -170,7 +170,7 @@ export default class OrderBook extends React.Component {
             })
 
             this.poloniex.on('bid', bid => {
-                const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price).slice(0, 20)
+                const newPrices = exchange.insertBidPrice(this.state.sortedBidPrices, bid.price)
 
                 const newTotals = JSON.parse(JSON.stringify(this.state.bidPriceToTotal))
                 newTotals.poloniex[bid.price] = {
@@ -211,7 +211,19 @@ export default class OrderBook extends React.Component {
     render () {
 
         // Order Book
-        const asks = this.state.sortedAskPrices.map(p => {
+        const asks = this.state.sortedAskPrices
+        .filter(p => {
+            const poloniexLiquidity = this.state.askPriceToTotal.poloniex[p]
+                ? parseFloat(this.state.askPriceToTotal.poloniex[p].total)
+                : 0
+            const bittrexLiquidity = this.state.askPriceToTotal.bittrex[p]
+                ? parseFloat(this.state.askPriceToTotal.bittrex[p].total)
+                : 0
+
+            return poloniexLiquidity > 0 || bittrexLiquidity > 0
+        })
+        .slice(0, 25)
+        .map(p => {
 
             const poloniexAmount = typeof this.state.askPriceToTotal.poloniex[p] !== 'undefined'
                   ? this.state.askPriceToTotal.poloniex[p].total
@@ -247,7 +259,7 @@ export default class OrderBook extends React.Component {
             }
 
 
-            // <div className={styles.amount}>{bAmount}</div>
+            // <div 
             // <div className={styles.total}>{bTotal}</div>
 
             return (
@@ -262,7 +274,19 @@ export default class OrderBook extends React.Component {
 
         })
 
-        const bids = this.state.sortedBidPrices.map(p => {
+        const bids = this.state.sortedBidPrices
+        .filter(p => {
+            const poloniexLiquidity = this.state.bidPriceToTotal.poloniex[p]
+                ? parseFloat(this.state.bidPriceToTotal.poloniex[p].total)
+                : 0
+            const bittrexLiquidity = this.state.bidPriceToTotal.bittrex[p]
+                ? parseFloat(this.state.bidPriceToTotal.bittrex[p].total)
+                : 0
+
+            return poloniexLiquidity > 0 || bittrexLiquidity > 0
+        })
+        .slice(0, 25)
+        .map(p => {
 
             const poloniexAmount = this.state.bidPriceToTotal.poloniex[p]
                   ? this.state.bidPriceToTotal.poloniex[p].total
