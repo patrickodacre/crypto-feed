@@ -18,7 +18,7 @@
 
     .orderBook {
         flex: 1;
-        // display: flex;
+        display: flex;
         > * {
             // flex: 1;
             border: 1px solid #333;
@@ -29,6 +29,29 @@
     .console {
         padding: 1rem;
         flex: 1;
+    }
+
+    .titles {
+        display: flex;
+        text-align: center;
+        border-bottom: 1px solid black;
+        padding-bottom: 1rem;
+
+        > * {
+            flex: 1;
+        }
+
+        > *:first-child {
+            border-right: 1px solid black;
+        }
+    }
+
+    .rowHeader {
+        display: flex;
+        justify-content: space-around;
+        padding: 1rem 0;
+        border-bottom: 1px solid black;
+        margin-bottom: 1rem;
     }
 }
 

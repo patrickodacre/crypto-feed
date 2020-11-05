@@ -429,10 +429,34 @@ export default class OrderBook extends React.Component {
                     <div className={styles.orderBook}>
                         <div className={styles.dashboardRows}>
                             <h2>Asks</h2>
+                            <div className={styles.titles}>
+                                <div>Poloniex</div>
+                                <div>Bittrex</div>
+                            </div>
+                            <div className={styles.rowHeader}>
+                                <div>Total BTC</div>
+                                <div>Liquidity</div>
+                                <div>Price</div>
+                                <div>Liquidity</div>
+                                <div>Total BTC</div>
+                            </div>
                             {asks}
                         </div>
+
                         <div className={styles.dashboardRows}>
                             <h2>Bids</h2>
+                            <div className={styles.titles}>
+                                <div>Poloniex</div>
+                                <div>Bittrex</div>
+                            </div>
+                            <div className={styles.rowHeader}>
+                                <div>Total BTC</div>
+                                <div>Liquidity</div>
+                                <div>Price</div>
+                                <div>Liquidity</div>
+                                <div>Total BTC</div>
+                            </div>
+
                             {bids}
                         </div>
                     </div>
