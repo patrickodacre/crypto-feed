@@ -16,6 +16,10 @@ export default class OrderBook extends React.Component {
         this.bittrex = null
 
         this.state = {
+            matches: {
+                bittrex: {},
+                poloniex: {},
+            },
             opps: {
                 // buy => sells
                 poloniex: {},
@@ -60,11 +64,34 @@ export default class OrderBook extends React.Component {
 
                 const [o, ok] = exchange.arbitrageBid(bid, 'bittrex', this.state.askPriceToTotal.poloniex, 'poloniex')
 
-                if (! ok) {
-                    return
+                if (ok) {
+                    this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
                 }
 
-                this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
+                // check for matches
+                // matches don't offer an opportunity to profit;
+                // you have to take exchange fees into account.
+                // the arbitrageBid / Ask checks do that.
+                {
+                    // at this point I'm not looking at Binance any longer,
+                    // so I'll hardcode a poloniex comparison here
+                    // the offer is to buy on bittrex
+                    // are there any offers to sell on Poloniex?
+                    const matches = {...this.state.matches}
+
+                    const askPriceTotal = this.state.askPriceToTotal.poloniex[bid.price]
+                        ? parseFloat(this.state.askPriceToTotal.poloniex[bid.price].total)
+                        : 0
+
+                    // we'll buy on poloniex to sell on bittrex:
+                    matches.poloniex[bid.price] = parseFloat(bid.amount) > 0 && askPriceTotal > 0
+
+                    if (matches.poloniex[bid.price]) {
+                        console.log('match!!')
+                    }
+
+                    this.setState({matches})
+                }
             })
 
             this.bittrex.on('ask', ask => {
@@ -81,11 +108,33 @@ export default class OrderBook extends React.Component {
 
                 const [o, ok] = exchange.arbitrageAsk(ask, 'bittrex', this.state.bidPriceToTotal.poloniex, 'poloniex')
 
-                if (! ok) {
-                    return
+                if (ok) {
+                    this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
                 }
 
-                this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
+
+                // check for matches
+                // matches don't offer an opportunity to profit;
+                // you have to take exchange fees into account.
+                // the arbitrageBid / Ask checks do that.
+                {
+                    // the offer is to sell on bittrex
+                    // are there any offers to buy on Poloniex?
+                    const matches = {...this.state.matches}
+
+                    const bidPriceTotal = this.state.bidPriceToTotal.poloniex[ask.price]
+                        ? parseFloat(this.state.bidPriceToTotal.poloniex[ask.price].total)
+                        : 0
+
+                    // we'll buy on bittrex to sell on poloniex
+                    matches.bittrex[ask.price] = parseFloat(ask.amount) > 0 && bidPriceTotal > 0
+
+                    if (matches.bittrex[ask.price]) {
+                        console.log('match!!')
+                    }
+
+                    this.setState({matches})
+                }
             })
         }
 
@@ -105,11 +154,9 @@ export default class OrderBook extends React.Component {
 
                 const [o, ok] = exchange.arbitrageBid(bid, 'binance', this.state.askPriceToTotal.poloniex, 'poloniex')
 
-                if (! ok) {
-                    return
+                if (ok) {
+                    this.setState({opps: {...this.state.opps, ...{binance: o}}})
                 }
-
-                this.setState({opps: {...this.state.opps, ...{binance: o}}})
             })
 
             this.binance.on('ask', ask => {
@@ -127,11 +174,9 @@ export default class OrderBook extends React.Component {
 
                 const [o, ok] = exchange.arbitrageAsk(ask, 'binance', this.state.bidPriceToTotal.poloniex, 'poloniex')
 
-                if (! ok) {
-                    return
+                if (ok) {
+                    this.setState({opps: {...this.state.opps, ...{binance: o}}})
                 }
-
-                this.setState({opps: {...this.state.opps, ...{binance: o}}})
             })
         }
 
@@ -162,11 +207,32 @@ export default class OrderBook extends React.Component {
 
                 const [o, ok] = exchange.arbitrageAsk(ask, 'poloniex', this.state.bidPriceToTotal.binance, 'binance')
 
-                if (! ok) {
-                    return
+                if (ok) {
+                    this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
                 }
 
-                this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
+                // check for matches
+                // matches don't offer an opportunity to profit;
+                // you have to take exchange fees into account.
+                // the arbitrageBid / Ask checks do that.
+                {
+                    // the offer is to sell on poloniex
+                    // are there any offers to buy on Bittrex?
+                    const matches = {...this.state.matches}
+
+                    const bidPriceTotal = this.state.bidPriceToTotal.bittrex[ask.price]
+                                        ? parseFloat(this.state.bidPriceToTotal.bittrex[ask.price].total)
+                                        : 0
+
+                    // we'll buy on poloniex to sell on bittrex
+                    matches.poloniex[ask.price] = parseFloat(ask.amount) > 0 && bidPriceTotal > 0
+
+                    if (matches.poloniex[ask.price]) {
+                        console.log('match!!')
+                    }
+
+                    this.setState({matches})
+                }
             })
 
             this.poloniex.on('bid', bid => {
@@ -183,11 +249,33 @@ export default class OrderBook extends React.Component {
 
                 const [o, ok] = exchange.arbitrageBid(bid, 'poloniex', this.state.askPriceToTotal.binance, 'binance')
 
-                if (! ok) {
-                    return
+                if (ok) {
+                    this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
                 }
 
-                this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
+
+                // check for matches
+                // matches don't offer an opportunity to profit;
+                // you have to take exchange fees into account.
+                // the arbitrageBid / Ask checks do that.
+                {
+                    const matches = {...this.state.matches}
+
+                    // the offer is to buy on poloniex
+                    // are there any offers to sell on bittrex?
+                    const askPriceTotal = this.state.askPriceToTotal.bittrex[bid.price]
+                        ? parseFloat(this.state.askPriceToTotal.bittrex[bid.price].total)
+                        : 0
+
+                    // we'll buy on bittrex to sell on poloniex
+                    matches.bittrex[bid.price] = parseFloat(bid.amount) > 0 && askPriceTotal > 0
+
+                    if (matches.bittrex[bid.price]) {
+                        console.log('match!!')
+                    }
+
+                    this.setState({matches})
+                }
             })
 
         }
@@ -448,6 +536,33 @@ export default class OrderBook extends React.Component {
             )
         })
 
+        // matches
+        const matchesBuyFromBittrex = Object.keys(this.state.matches.bittrex)
+        const matchesBuyFromPoloniex = Object.keys(this.state.matches.poloniex)
+
+        const bittrexMatches = matchesBuyFromBittrex
+            .filter(p => this.state.matches.bittrex[p])
+            .map(p => {
+                return (
+                    <div className={styles.opp} key={p}>
+                        <div className={styles.oppBuySell}>
+                            <div>Match: Buy on Bittrex: {parseFloat(p)}</div>
+                        </div>
+                    </div>
+                )
+            })
+
+        const poloniexMatches = matchesBuyFromPoloniex
+            .filter(p => this.state.matches.poloniex[p])
+            .map(p => {
+                return (
+                    <div className={styles.opp} key={p}>
+                        <div className={styles.oppBuySell}>
+                            <div>Match: Buy on Poloniex: {parseFloat(p)}</div>
+                        </div>
+                    </div>
+                )
+            })
         return (
             <div>
                 <button onClick={this.closeConnection}>Close</button>
@@ -491,6 +606,8 @@ export default class OrderBook extends React.Component {
                         <div>{poloniexBuys}</div>
                         <div>{binanceBuys}</div>
                         <div>{bittrexBuys}</div>
+                        <div>{bittrexMatches}</div>
+                        <div>{poloniexMatches}</div>
                     </div>
                 </div>
 
