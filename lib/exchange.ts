@@ -26,7 +26,7 @@ function arbitrageBid(
 {
 
     const desiredLiquidity: number = parseFloat(bid.amount)
-    const opps: OpportunitiesObj = {}
+    const opps: OpportunitiesObj = {[compareExchange] : {}}
 
     if (! desiredLiquidity) {
         return [opps, false]
@@ -38,9 +38,10 @@ function arbitrageBid(
 
     // we have a "BID" => an offer to buy
     // look at potential sellers to see if we can profit
+    let profitFound = false
     for (const askPrice in existingAsks) {
 
-        const availableLiquidity: number = parseFloat(existingAsks.total)
+        const availableLiquidity: number = parseFloat(existingAsks[askPrice].total)
 
         if (! availableLiquidity) {
             continue
@@ -56,6 +57,8 @@ function arbitrageBid(
                 // console.log(`no profit buying from ${compareExchange} and selling to ${exchange}`, profit)
                 continue
             }
+
+            profitFound = true
         }
 
         // we can buy from the other exchange and sell to this one
@@ -74,7 +77,7 @@ function arbitrageBid(
         opps[compareExchange][askPrice][bid.price].sell += desiredLiquidity
     }
 
-    return [opps, true]
+    return [opps, profitFound]
 }
 
 // arbitrageAsk checks the incoming ASK order to see
@@ -90,7 +93,7 @@ function arbitrageAsk(
 {
 
     const availableLiquidity: number = parseFloat(ask.amount)
-    const opps: OpportunitiesObj = {}
+    const opps: OpportunitiesObj = {[exchange]: {}}
 
     if (! availableLiquidity) {
         return [opps, false]
@@ -102,6 +105,7 @@ function arbitrageAsk(
 
     // we have an "ASK" => an offer to sell
     // look at potential buyers to see if we can profit
+    let profitFound = false
     for (const bidPrice in existingBids) {
 
         const desiredLiquidity: number = parseFloat(existingBids[bidPrice].total)
@@ -121,6 +125,8 @@ function arbitrageAsk(
                 // console.log(`no profit buying from ${exchange} and selling to ${compareExchange}`, profit)
                 continue
             }
+
+            profitFound = true
         }
 
         // we can buy from this exchange and sell to the other one
@@ -139,7 +145,7 @@ function arbitrageAsk(
         opps[exchange][ask.price][bidPrice].sell += desiredLiquidity
     }
 
-    return [opps, true]
+    return [opps, profitFound]
 }
 
 function matchAskToBid(
