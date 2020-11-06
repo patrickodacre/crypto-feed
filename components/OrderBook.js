@@ -166,7 +166,7 @@ export default class OrderBook extends React.Component {
                 this.setState({askPriceToTotal: newTotals})
                 this.setState({sortedAskPrices: newPrices})
 
-                const [o, ok] = exchange.arbitrageAsk(ask, 'poloniex', this.state.bidPriceToTotal.binance, 'binance')
+                const [o, ok] = exchange.arbitrageAsk(ask, 'poloniex', this.state.bidPriceToTotal.bittrex, 'bittrex')
 
                 if (ok) {
                     this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
@@ -189,7 +189,7 @@ export default class OrderBook extends React.Component {
                 this.setState({bidPriceToTotal: newTotals})
                 this.setState({sortedBidPrices: newPrices})
 
-                const [o, ok] = exchange.arbitrageBid(bid, 'poloniex', this.state.askPriceToTotal.binance, 'binance')
+                const [o, ok] = exchange.arbitrageBid(bid, 'poloniex', this.state.askPriceToTotal.bittrex, 'bittrex')
 
                 if (ok) {
                     this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
