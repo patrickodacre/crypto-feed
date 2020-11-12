@@ -30,7 +30,7 @@ function start() : void {
     // a websocket client from the browser. I had to use
     // an existing NodeJS client made for signalR
     // and then pipe the data to the browser using socketio
-    _client = io.connect('http://127.0.0.1:3001')
+    _client = io.connect('http://127.0.0.1:3002')
 
     _client.on('bittrex', data => {
         read(data)
