@@ -2,8 +2,8 @@ const express = require('express')
 const app = express()
 var http = require('http').createServer(app)
 var io = require('socket.io')(http)
-const port = 3001
-io.origins(['http://127.0.0.1:3000', 'http://localhost:3000'])
+const port = 3002
+io.origins(['http://127.0.0.1:3001', 'http://localhost:3001'])
 
 const signalR = require('signalr-client');
 const zlib = require('zlib');
