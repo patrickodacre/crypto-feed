@@ -22,7 +22,7 @@ function arbitrageBid(
     exchange: string,
     existingAsks: PriceToTotal,
     compareExchange: string
-) : [OpportunitiesObj, boolean]
+) : [OpportunitiesObj, boolean, boolean]
 {
 
     const desiredLiquidity: number = parseFloat(bid.amount)
@@ -74,7 +74,7 @@ function arbitrageBid(
         opps[compareExchange][askPrice][bid.price].sell += desiredLiquidity
     }
 
-    return [opps, profitFound]
+    return [opps, profitFound, false]
 }
 
 // arbitrageAsk checks the incoming ASK order to see
@@ -86,7 +86,7 @@ function arbitrageAsk(
     exchange: string,
     existingBids: PriceToTotal,
     compareExchange: string
-) : [OpportunitiesObj, boolean]
+) : [OpportunitiesObj, boolean, boolean]
 {
 
     const availableLiquidity: number = parseFloat(ask.amount)
@@ -139,7 +139,7 @@ function arbitrageAsk(
         opps[exchange][ask.price][bidPrice].sell += desiredLiquidity
     }
 
-    return [opps, profitFound]
+    return [opps, profitFound, false]
 }
 
 function matchAskToBid(
