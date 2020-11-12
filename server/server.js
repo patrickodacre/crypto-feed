@@ -3,7 +3,7 @@ const app = express()
 var http = require('http').createServer(app)
 var io = require('socket.io')(http)
 const port = 3002
-io.origins(['http://127.0.0.1:3001', 'http://localhost:3001'])
+io.origins(['http://orderbook_complex.buildtolearn.io'])
 
 const signalR = require('signalr-client');
 const zlib = require('zlib');
