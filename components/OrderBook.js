@@ -115,6 +115,9 @@ export default class OrderBook extends React.Component {
 
                 const [o, ok] = exchange.arbitrageBid(bid, 'binance', this.state.askPriceToTotal.poloniex, 'poloniex')
 
+                console.log('Arbitrage Opportunity on Bid?', ok)
+                console.log('data -- ', o)
+
                 if (ok) {
                     this.setState({opps: {...this.state.opps, ...{binance: o}}})
                 }
@@ -134,6 +137,9 @@ export default class OrderBook extends React.Component {
                 this.setState({sortedAskPrices: newPrices})
 
                 const [o, ok] = exchange.arbitrageAsk(ask, 'binance', this.state.bidPriceToTotal.poloniex, 'poloniex')
+
+                console.log('Arbitrage Opportunity on Ask?', ok)
+                console.log('data -- ', o)
 
                 if (ok) {
                     this.setState({opps: {...this.state.opps, ...{binance: o}}})
@@ -205,11 +211,6 @@ export default class OrderBook extends React.Component {
         this.bittrex.start()
         // this.binance.start()
         this.poloniex.start()
-    }
-
-    checkTotals = () => {
-        console.log('asks', this.state.askPriceToTotal)
-        console.log('bids', this.state.bidPriceToTotal)
     }
 
     closeConnection = () => {
@@ -488,7 +489,6 @@ export default class OrderBook extends React.Component {
         return (
             <div>
                 <button onClick={this.closeConnection}>Close</button>
-                <button onClick={this.checkTotals}>Check</button>
                 <div className={styles.dashboardWrap}>
                     <div className={styles.orderBook}>
                         <div className={styles.dashboardRows}>
@@ -525,6 +525,8 @@ export default class OrderBook extends React.Component {
                         </div>
                     </div>
                     <div className={styles.console}>
+                        <h2>Arbitrage Opportunities</h2>
+                        <p>View console for streaming data on arbitrage checks.</p>
                         <div>{poloniexBuys}</div>
                         <div>{binanceBuys}</div>
                         <div>{bittrexBuys}</div>
