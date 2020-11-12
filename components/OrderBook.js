@@ -351,13 +351,16 @@ export default class OrderBook extends React.Component {
         const buyFromPoloniexPrices = Object.keys(this.state.opps.poloniex)
         const buyFromBittrexPrices = Object.keys(this.state.opps.bittrex)
 
+
+        // successful arbitrage
+        // buy on poloniex, sell on bittrex
         const poloniexBuys = buyFromPoloniexPrices.map((buyPrice, i) => {
 
             const key = buyPrice + i + ""
 
-            const binanceSellPrices = Object.keys(this.state.opps.poloniex[buyPrice])
+            const bittrexSellPrices = Object.keys(this.state.opps.poloniex[buyPrice])
 
-            const opps = binanceSellPrices.map((sellPrice, i) => {
+            const opps = bittrexSellPrices.map((sellPrice, i) => {
                 const key = sellPrice + i + ""
 
                 const pFee = buyPrice * 0.125
@@ -387,6 +390,8 @@ export default class OrderBook extends React.Component {
             )
         })
 
+        // buy on binance, sell on poloniex
+        // DISABLED
         const binanceBuys = buyFromBinancePrices.map((buyPrice, i) => {
 
             const key = buyPrice + i + ""
@@ -423,6 +428,7 @@ export default class OrderBook extends React.Component {
             )
         })
 
+        // buy on bittrex, sell on poloniex
         const bittrexBuys = buyFromBittrexPrices.map((buyPrice, i) => {
 
             const key = buyPrice + i + ""
