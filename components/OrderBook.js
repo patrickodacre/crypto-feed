@@ -626,6 +626,7 @@ export default class OrderBook extends React.Component {
                         </div>
                     </div>
                     <div className={styles.console}>
+                        <h2>Arbitrage Opportunities</h2>
                         <h3>Buy Opportunities</h3>
                         <div>{poloniexBuys}</div>
                         <div>{binanceBuys}</div>
@@ -633,8 +634,6 @@ export default class OrderBook extends React.Component {
                         <div>{bittrexMatches}</div>
                         <div>{poloniexMatches}</div>
 
-
-                        <h2>Arbitrage Opportunities</h2>
                         <h3>Checks to buy on Bittrex and Sell on Poloniex</h3>
                         {bittrexChecks}
                         <h3>Checks to buy on Poloniex and Sell on Bittrex</h3>
