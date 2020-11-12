@@ -6,7 +6,7 @@
     "test": "./node_modules/.bin/mocha -r esm",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start -p 3001"
   },
   "dependencies": {
     "axios": "^0.21.0",
