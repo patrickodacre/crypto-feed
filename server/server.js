@@ -1,9 +1,15 @@
 const express = require('express')
 const app = express()
 var http = require('http').createServer(app)
-var io = require('socket.io')(http)
+var io = require('socket.io')(http, {
+    cors: {
+        origin: "http://orderbook_complex.buildtolearn.io",
+        methods: ["GET", "POST"],
+        // allowedHeaders: ["my-custom-header"],
+        credentials: true
+    }
+})
 const port = 3002
-io.origins(['http://orderbook_complex.buildtolearn.io'])
 
 const signalR = require('signalr-client');
 const zlib = require('zlib');
