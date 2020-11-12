@@ -20,6 +20,10 @@ export default class OrderBook extends React.Component {
                 bittrex: {},
                 poloniex: {},
             },
+            checks: {
+                poloniex: {},
+                bittrex: {},
+            },
             opps: {
                 // buy => sells
                 poloniex: {},
@@ -62,10 +66,12 @@ export default class OrderBook extends React.Component {
                 this.setState({bidPriceToTotal: newTotals})
                 this.setState({sortedBidPrices: newPrices})
 
-                const [o, ok] = exchange.arbitrageBid(bid, 'bittrex', this.state.askPriceToTotal.poloniex, 'poloniex')
+                const [poloniexBuyOpp, ok, empty] = exchange.arbitrageBid(bid, 'bittrex', this.state.askPriceToTotal.poloniex, 'poloniex')
 
                 if (ok) {
-                    this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
+                    this.setState({opps: {...this.state.opps, ...{poloniex: poloniexBuyOpp.poloniex}}})
+                } else if (! empty) {
+                    this.setState({checks: {...this.state.checks, ...{poloniex: poloniexBuyOpp.poloniex}}})
                 }
 
                 // check for matches
@@ -87,10 +93,11 @@ export default class OrderBook extends React.Component {
                 this.setState({askPriceToTotal: newTotals})
                 this.setState({sortedAskPrices: newPrices})
 
-                const [o, ok] = exchange.arbitrageAsk(ask, 'bittrex', this.state.bidPriceToTotal.poloniex, 'poloniex')
-
+                const [bittrexBuyOpp, ok, empty] = exchange.arbitrageAsk(ask, 'bittrex', this.state.bidPriceToTotal.poloniex, 'poloniex')
                 if (ok) {
-                    this.setState({opps: {...this.state.opps, ...{bittrex: o}}})
+                    this.setState({opps: {...this.state.opps, ...{bittrex: bittrexBuyOpp.bittrex}}})
+                } else if (! empty) {
+                    this.setState({checks: {...this.state.checks, ...{bittrex: bittrexBuyOpp.bittrex}}})
                 }
 
                 // selling on bittrex => buying on poloniex?
@@ -172,10 +179,12 @@ export default class OrderBook extends React.Component {
                 this.setState({askPriceToTotal: newTotals})
                 this.setState({sortedAskPrices: newPrices})
 
-                const [o, ok] = exchange.arbitrageAsk(ask, 'poloniex', this.state.bidPriceToTotal.bittrex, 'bittrex')
+                const [poloniexBuyOpp, ok, empty] = exchange.arbitrageAsk(ask, 'poloniex', this.state.bidPriceToTotal.bittrex, 'bittrex')
 
                 if (ok) {
-                    this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
+                    this.setState({opps: {...this.state.opps, ...{poloniex: poloniexBuyOpp.poloniex}}})
+                } else if (! empty) {
+                    this.setState({checks: {...this.state.checks, ...{poloniex: poloniexBuyOpp.poloniex}}})
                 }
 
                 // selling on poloniex => buyers on bittrex?
@@ -195,10 +204,12 @@ export default class OrderBook extends React.Component {
                 this.setState({bidPriceToTotal: newTotals})
                 this.setState({sortedBidPrices: newPrices})
 
-                const [o, ok] = exchange.arbitrageBid(bid, 'poloniex', this.state.askPriceToTotal.bittrex, 'bittrex')
+                const [bittrexBuyOpp, ok, empty] = exchange.arbitrageBid(bid, 'poloniex', this.state.askPriceToTotal.bittrex, 'bittrex')
 
                 if (ok) {
-                    this.setState({opps: {...this.state.opps, ...{poloniex: o}}})
+                    this.setState({opps: {...this.state.opps, ...{bittrex: bittrexBuyOpp.bittrex}}})
+                } else if (! empty) {
+                    this.setState({checks: {...this.state.checks, ...{bittrex: bittrexBuyOpp.bittrex}}})
                 }
 
                 // buying on Poloniex => selling on Bittrex?
@@ -351,6 +362,90 @@ export default class OrderBook extends React.Component {
         const buyFromPoloniexPrices = Object.keys(this.state.opps.poloniex)
         const buyFromBittrexPrices = Object.keys(this.state.opps.bittrex)
 
+        // checks for POLONIEX and BITTREX
+        let checksPoloniex = Object.keys(this.state.checks.poloniex)
+
+        if (checksPoloniex.length > 10) {
+            checksPoloniex = checksPoloniex.slice(0,10)
+        }
+
+        const poloniexChecks = checksPoloniex.map((buyPrice, i) => {
+
+            const key = buyPrice + i + ""
+
+            const bittrexSellPrices = Object.keys(this.state.checks.poloniex[buyPrice])
+
+            const checks = bittrexSellPrices.map((sellPrice, i) => {
+                const key = sellPrice + i + ""
+
+                const pFee = buyPrice * 0.125
+                const bFee = sellPrice * 0.1
+                const profit = (sellPrice - buyPrice - (bFee + bFee))
+
+                const profitClass = profit > 0
+                      ? 'green'
+                      : 'red'
+
+                return (
+                    <div className={styles.opp} key={key}>
+                        <div>Sell at: {parseFloat(sellPrice)} = Profit <span className={styles[profitClass]}>{profit}</span></div>
+                        <div className={styles.oppBuySell}>
+                            <div>Buy Amount: {this.state.checks.poloniex[buyPrice][sellPrice].buy}</div>
+                            <div>Sell Amount: {this.state.checks.poloniex[buyPrice][sellPrice].sell}</div>
+                        </div>
+                    </div>
+                )
+            })
+
+            return (
+                <div className={styles.oppGroup} key={key}>
+                    <div>Check Buy From Poloniex at {parseFloat(buyPrice)}</div>
+                    {checks}
+                </div>
+            )
+        })
+
+        let checksBittrex = Object.keys(this.state.checks.bittrex)
+
+        if (checksBittrex.length > 10) {
+            checksBittrex = checksBittrex.slice(0,10)
+        }
+
+        const bittrexChecks = checksBittrex.map((buyPrice, i) => {
+
+            const key = buyPrice + i + ""
+
+            const poloniexSellPrices = Object.keys(this.state.checks.bittrex[buyPrice])
+
+            const checks = poloniexSellPrices.map((sellPrice, i) => {
+                const key = sellPrice + i + ""
+
+                const pFee = buyPrice * 0.125
+                const bFee = sellPrice * 0.1
+                const profit = (sellPrice - buyPrice - (bFee + bFee))
+
+                const profitClass = profit > 0
+                      ? 'green'
+                      : 'red'
+
+                return (
+                    <div className={styles.opp} key={key}>
+                        <div>Sell at: {parseFloat(sellPrice)} = Profit <span className={styles[profitClass]}>{profit}</span></div>
+                        <div className={styles.oppBuySell}>
+                            <div>Buy Amount: {this.state.checks.bittrex[buyPrice][sellPrice].buy}</div>
+                            <div>Sell Amount: {this.state.checks.bittrex[buyPrice][sellPrice].sell}</div>
+                        </div>
+                    </div>
+                )
+            })
+
+            return (
+                <div className={styles.oppGroup} key={key}>
+                    <div>Check Buy From Poloniex at {parseFloat(buyPrice)}</div>
+                    {checks}
+                </div>
+            )
+        })
 
         // successful arbitrage
         // buy on poloniex, sell on bittrex
@@ -531,13 +626,20 @@ export default class OrderBook extends React.Component {
                         </div>
                     </div>
                     <div className={styles.console}>
-                        <h2>Arbitrage Opportunities</h2>
-                        <p>View console for streaming data on arbitrage checks.</p>
+                        <h3>Buy Opportunities</h3>
                         <div>{poloniexBuys}</div>
                         <div>{binanceBuys}</div>
                         <div>{bittrexBuys}</div>
                         <div>{bittrexMatches}</div>
                         <div>{poloniexMatches}</div>
+
+
+                        <h2>Arbitrage Opportunities</h2>
+                        <h3>Checks to buy on Bittrex and Sell on Poloniex</h3>
+                        {bittrexChecks}
+                        <h3>Checks to buy on Poloniex and Sell on Bittrex</h3>
+                        {poloniexChecks}
+
                     </div>
                 </div>
 

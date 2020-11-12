@@ -29,7 +29,7 @@ function arbitrageBid(
     const opps: OpportunitiesObj = {[compareExchange] : {}}
 
     if (! desiredLiquidity) {
-        return [opps, false]
+        return [opps, false, true]
     }
 
     // I need to sell at this price w/ this fee
@@ -53,12 +53,9 @@ function arbitrageBid(
             const buyFee: number = buyPrice * fees[compareExchange]
             const profit: number = (sellPrice - buyPrice - (exchangeFee + buyFee))
 
-            if (profit <= 0) {
-                // console.log(`no profit buying from ${compareExchange} and selling to ${exchange}`, profit)
-                continue
+            if (profit > 0) {
+                profitFound = true
             }
-
-            profitFound = true
         }
 
         // we can buy from the other exchange and sell to this one
@@ -96,7 +93,7 @@ function arbitrageAsk(
     const opps: OpportunitiesObj = {[exchange]: {}}
 
     if (! availableLiquidity) {
-        return [opps, false]
+        return [opps, false, true]
     }
 
     // I can buy at this price w/ this fee:
@@ -121,12 +118,9 @@ function arbitrageAsk(
             const sellFee: number = sellPrice * fees[compareExchange]
             const profit: number = (sellPrice - buyPrice - (buyFee + sellFee))
 
-            if (profit <= 0) {
-                // console.log(`no profit buying from ${exchange} and selling to ${compareExchange}`, profit)
-                continue
+            if (profit > 0) {
+                profitFound = true
             }
-
-            profitFound = true
         }
 
         // we can buy from this exchange and sell to the other one
